@@ -13,6 +13,7 @@ export type RewardOverlayProps = UseRewardOverlayLogicInput
 type UseRewardOverlayLogicResult = {
   videoRef: RefObject<HTMLVideoElement | null>
   sourcePath: typeof PRIMARY_REWARD_SOURCE
+  requiresManualStart: boolean
   showManualPlayButton: boolean
   manualPlayButtonText: string
   onManualPlay: () => void
@@ -41,11 +42,10 @@ export function useRewardOverlayLogic({
   startSeconds,
 }: UseRewardOverlayLogicInput): UseRewardOverlayLogicResult {
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const isTouchPlayback = window.matchMedia('(pointer: coarse)').matches
-  const [hasUnlockedPlayback, setHasUnlockedPlayback] = useState(false)
+  const requiresManualStart = window.matchMedia('(pointer: coarse)').matches
   const [showManualPlayButton, setShowManualPlayButton] = useState(false)
 
-  const startPlayback = useCallback((isUserInitiated: boolean) => {
+  const startPlayback = useCallback(() => {
     const element = videoRef.current
     if (!element) {
       return
@@ -59,9 +59,6 @@ export function useRewardOverlayLogic({
 
     void playAttempt
       .then(() => {
-        if (isUserInitiated) {
-          setHasUnlockedPlayback(true)
-        }
         setShowManualPlayButton(false)
       })
       .catch(() => {
@@ -79,10 +76,10 @@ export function useRewardOverlayLogic({
       return
     }
 
-    if (isTouchPlayback && !hasUnlockedPlayback) {
+    if (requiresManualStart) {
       setShowManualPlayButton(true)
     }
-  }, [visible, isTouchPlayback, hasUnlockedPlayback])
+  }, [visible, requiresManualStart])
 
   const onVideoLoaded = useCallback(() => {
     if (!visible) {
@@ -99,24 +96,24 @@ export function useRewardOverlayLogic({
       Number.isFinite(duration) && duration > 0 ? startSeconds % duration : 0
     element.currentTime = effectiveStart
 
-    if (isTouchPlayback && !hasUnlockedPlayback) {
+    if (requiresManualStart) {
       return
     }
 
-    startPlayback(false)
-  }, [visible, isTouchPlayback, hasUnlockedPlayback, startSeconds, startPlayback])
+    startPlayback()
+  }, [visible, requiresManualStart, startSeconds, startPlayback])
 
   const onVideoCanPlay = useCallback(() => {
     if (!visible) {
       return
     }
 
-    if (isTouchPlayback && !hasUnlockedPlayback) {
+    if (requiresManualStart) {
       return
     }
 
-    startPlayback(false)
-  }, [visible, isTouchPlayback, hasUnlockedPlayback, startPlayback])
+    startPlayback()
+  }, [visible, requiresManualStart, startPlayback])
 
   const onVideoPlaying = useCallback(() => {
     setShowManualPlayButton(false)
@@ -125,11 +122,10 @@ export function useRewardOverlayLogic({
   return {
     videoRef,
     sourcePath: PRIMARY_REWARD_SOURCE,
+    requiresManualStart,
     showManualPlayButton,
     manualPlayButtonText: 'Tap to start video',
-    onManualPlay: () => {
-      startPlayback(true)
-    },
+    onManualPlay: startPlayback,
     onVideoLoaded,
     onVideoCanPlay,
     onVideoPlaying,

@@ -25,5 +25,6 @@
 
 ## Local reward videos
 
-- Primary reward video path: `public/videos/reward.mov`
-- The file is played locally by the browser from `/videos/*`.
+- Reward video path: `public/videos/reward.m4v`
+- Video is played locally by the browser from `/videos/*`.
+- On iPad/touch devices, reward playback uses **Tap to start video**.
