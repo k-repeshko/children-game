@@ -4,27 +4,27 @@ import type { GameBoardProps } from './GameBoard.logic'
 export function GameBoard({
   boardRef,
   targetStyle,
-  pieceStyle,
+  shapeStyle,
   hitAreaStyle,
   isDisabled,
-  onPiecePointerDown,
-  onPiecePointerMove,
-  onPiecePointerUp,
+  onShapePointerDown,
+  onShapePointerMove,
+  onShapePointerUp,
 }: GameBoardProps) {
   return (
     <section ref={boardRef} className="game-board" aria-label="Game board">
       <div className="target-line" style={targetStyle} aria-hidden="true" />
       <button
         type="button"
-        className="piece"
-        style={pieceStyle}
+        className="shape"
+        style={shapeStyle}
         disabled={isDisabled}
-        aria-label="Drag piece to the line"
-        onPointerDown={onPiecePointerDown}
-        onPointerMove={onPiecePointerMove}
-        onPointerUp={onPiecePointerUp}
+        aria-label="Drag shape to the line"
+        onPointerDown={onShapePointerDown}
+        onPointerMove={onShapePointerMove}
+        onPointerUp={onShapePointerUp}
       >
-        <span className="piece-hit-area" style={hitAreaStyle} aria-hidden="true" />
+        <span className="shape-hit-area" style={hitAreaStyle} aria-hidden="true" />
       </button>
     </section>
   )

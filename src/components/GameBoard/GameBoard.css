@@ -11,7 +11,7 @@
   box-shadow: 0 0 0 8px rgba(0, 0, 0, 0.03);
 }
 
-.piece {
+.shape {
   position: absolute;
   border: none;
   border-radius: 28px;
@@ -22,14 +22,14 @@
     0 3px 10px rgba(0, 0, 0, 0.16);
 }
 
-.piece:active {
+.shape:active {
   cursor: grabbing;
 }
 
-.piece:disabled {
+.shape:disabled {
   pointer-events: none;
 }
 
-.piece-hit-area {
+.shape-hit-area {
   position: absolute;
 }

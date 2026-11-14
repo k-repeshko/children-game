@@ -3,11 +3,11 @@
 ## Game concept
 
 - Full-screen white background.
-- A large game piece (box) and a thick target line are shown in the play area.
-- The piece and target line are always the same random rainbow color.
-- The piece starts on either the left or right side at random, and the target line appears on the opposite side.
-- The child drags the piece with a finger to the target line.
-- When the piece touches the line, the game is completed.
+- A large game shape (box) and a thick target line are shown in the play area.
+- The shape and target line are always the same random rainbow color.
+- The shape starts on either the left or right side at random, and the target line appears on the opposite side.
+- The child drags the shape with a finger to the target line.
+- When the shape touches the line, the game is completed.
 
 ## Reward behavior
 

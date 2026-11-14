@@ -4,7 +4,7 @@ export type Side = 'left' | 'right'
 
 export type GameRound = {
   color: string
-  pieceSide: Side
+  shapeSide: Side
   targetSide: Side
 }
 
@@ -17,11 +17,11 @@ function getOppositeSide(side: Side): Side {
 }
 
 export function createGameRound(): GameRound {
-  const pieceSide = getRandomSide()
+  const shapeSide = getRandomSide()
 
   return {
     color: getRandomRainbowColor(),
-    pieceSide,
-    targetSide: getOppositeSide(pieceSide),
+    shapeSide,
+    targetSide: getOppositeSide(shapeSide),
   }
 }

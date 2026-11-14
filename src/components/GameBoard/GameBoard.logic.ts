@@ -3,7 +3,7 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent, RefCallback } fr
 import {
   BOARD_EDGE_GAP,
   DRAG_HIT_AREA_PADDING,
-  PIECE_SIZE,
+  SHAPE_SIZE,
   TARGET_HEIGHT,
   TARGET_WIDTH,
 } from '../../logic/game.constants'
@@ -28,7 +28,7 @@ type Size = {
 
 export type UseGameBoardLogicInput = {
   color: string
-  pieceSide: Side
+  shapeSide: Side
   targetSide: Side
   resetToken: number
   disabled: boolean
@@ -38,12 +38,12 @@ export type UseGameBoardLogicInput = {
 export type GameBoardProps = {
   boardRef: RefCallback<HTMLElement>
   targetStyle: CSSProperties
-  pieceStyle: CSSProperties
+  shapeStyle: CSSProperties
   hitAreaStyle: CSSProperties
   isDisabled: boolean
-  onPiecePointerDown: (event: ReactPointerEvent<HTMLButtonElement>) => void
-  onPiecePointerMove: (event: ReactPointerEvent<HTMLButtonElement>) => void
-  onPiecePointerUp: (event: ReactPointerEvent<HTMLButtonElement>) => void
+  onShapePointerDown: (event: ReactPointerEvent<HTMLButtonElement>) => void
+  onShapePointerMove: (event: ReactPointerEvent<HTMLButtonElement>) => void
+  onShapePointerUp: (event: ReactPointerEvent<HTMLButtonElement>) => void
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -59,11 +59,11 @@ function intersects(a: Rect, b: Rect): boolean {
   )
 }
 
-function getInitialPosition(pieceSide: Side, size: Size): Point {
+function getInitialPosition(shapeSide: Side, size: Size): Point {
   const x =
-    pieceSide === 'left'
-      ? BOARD_EDGE_GAP + PIECE_SIZE / 2
-      : size.width - BOARD_EDGE_GAP - PIECE_SIZE / 2
+    shapeSide === 'left'
+      ? BOARD_EDGE_GAP + SHAPE_SIZE / 2
+      : size.width - BOARD_EDGE_GAP - SHAPE_SIZE / 2
 
   return {
     x,
@@ -83,12 +83,12 @@ function getTargetRect(targetSide: Side, size: Size): Rect {
   }
 }
 
-function getPieceRect(center: Point): Rect {
+function getShapeRect(center: Point): Rect {
   return {
-    left: center.x - PIECE_SIZE / 2,
-    top: center.y - PIECE_SIZE / 2,
-    width: PIECE_SIZE,
-    height: PIECE_SIZE,
+    left: center.x - SHAPE_SIZE / 2,
+    top: center.y - SHAPE_SIZE / 2,
+    width: SHAPE_SIZE,
+    height: SHAPE_SIZE,
   }
 }
 
@@ -106,7 +106,7 @@ function getEventBoardCoordinates(
 
 export function useGameBoardLogic({
   color,
-  pieceSide,
+  shapeSide,
   targetSide,
   resetToken,
   disabled,
@@ -119,7 +119,7 @@ export function useGameBoardLogic({
     width: window.innerWidth,
     height: window.innerHeight,
   })
-  const [pieceCenter, setPieceCenter] = useState<Point>(() => ({
+  const [shapeCenter, setShapeCenter] = useState<Point>(() => ({
     x: 0,
     y: 0,
   }))
@@ -132,7 +132,7 @@ export function useGameBoardLogic({
 
   const verifySuccess = useCallback(
     (nextCenter: Point) => {
-      if (!disabled && intersects(getPieceRect(nextCenter), targetRect)) {
+      if (!disabled && intersects(getShapeRect(nextCenter), targetRect)) {
         onSuccess()
       }
     },
@@ -140,10 +140,10 @@ export function useGameBoardLogic({
   )
 
   useEffect(() => {
-    const nextPosition = getInitialPosition(pieceSide, boardSize)
-    setPieceCenter(nextPosition)
+    const nextPosition = getInitialPosition(shapeSide, boardSize)
+    setShapeCenter(nextPosition)
     setIsDragging(false)
-  }, [pieceSide, boardSize, resetToken])
+  }, [shapeSide, boardSize, resetToken])
 
   useEffect(() => {
     if (!boardElement) {
@@ -190,7 +190,7 @@ export function useGameBoardLogic({
     setBoardElement(element)
   }, [])
 
-  const onPiecePointerDown = useCallback(
+  const onShapePointerDown = useCallback(
     (event: ReactPointerEvent<HTMLButtonElement>) => {
       if (disabled || !boardElement) {
         return
@@ -201,15 +201,15 @@ export function useGameBoardLogic({
 
       const pointer = getEventBoardCoordinates(event, boardElement)
       dragOffsetRef.current = {
-        x: pointer.x - pieceCenter.x,
-        y: pointer.y - pieceCenter.y,
+        x: pointer.x - shapeCenter.x,
+        y: pointer.y - shapeCenter.y,
       }
       setIsDragging(true)
     },
-    [boardElement, disabled, pieceCenter],
+    [boardElement, disabled, shapeCenter],
   )
 
-  const onPiecePointerMove = useCallback(
+  const onShapePointerMove = useCallback(
     (event: ReactPointerEvent<HTMLButtonElement>) => {
       if (disabled || !isDragging || !boardElement) {
         return
@@ -219,23 +219,23 @@ export function useGameBoardLogic({
       const nextCenter: Point = {
         x: clamp(
           pointer.x - dragOffsetRef.current.x,
-          PIECE_SIZE / 2,
-          boardSize.width - PIECE_SIZE / 2,
+          SHAPE_SIZE / 2,
+          boardSize.width - SHAPE_SIZE / 2,
         ),
         y: clamp(
           pointer.y - dragOffsetRef.current.y,
-          PIECE_SIZE / 2,
-          boardSize.height - PIECE_SIZE / 2,
+          SHAPE_SIZE / 2,
+          boardSize.height - SHAPE_SIZE / 2,
         ),
       }
 
-      setPieceCenter(nextCenter)
+      setShapeCenter(nextCenter)
       verifySuccess(nextCenter)
     },
     [boardElement, disabled, isDragging, boardSize, verifySuccess],
   )
 
-  const onPiecePointerUp = useCallback(
+  const onShapePointerUp = useCallback(
     (event: ReactPointerEvent<HTMLButtonElement>) => {
       if (event.currentTarget.hasPointerCapture(event.pointerId)) {
         event.currentTarget.releasePointerCapture(event.pointerId)
@@ -245,15 +245,15 @@ export function useGameBoardLogic({
     [],
   )
 
-  const pieceStyle = useMemo<CSSProperties>(
+  const shapeStyle = useMemo<CSSProperties>(
     () => ({
-      width: PIECE_SIZE,
-      height: PIECE_SIZE,
-      left: pieceCenter.x - PIECE_SIZE / 2,
-      top: pieceCenter.y - PIECE_SIZE / 2,
+      width: SHAPE_SIZE,
+      height: SHAPE_SIZE,
+      left: shapeCenter.x - SHAPE_SIZE / 2,
+      top: shapeCenter.y - SHAPE_SIZE / 2,
       backgroundColor: color,
     }),
-    [pieceCenter, color],
+    [shapeCenter, color],
   )
 
   const targetStyle = useMemo<CSSProperties>(
@@ -280,11 +280,11 @@ export function useGameBoardLogic({
   return {
     boardRef,
     targetStyle,
-    pieceStyle,
+    shapeStyle,
     hitAreaStyle,
     isDisabled: disabled,
-    onPiecePointerDown,
-    onPiecePointerMove,
-    onPiecePointerUp,
+    onShapePointerDown,
+    onShapePointerMove,
+    onShapePointerUp,
   }
 }
