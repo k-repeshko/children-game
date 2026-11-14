@@ -3,21 +3,23 @@
 ## Game concept
 
 - Full-screen white background.
-- A big red square and a thick red target line are shown in the game area.
-- The square starts on either the left or right side at random, and the target line appears on the opposite side.
-- The child drags the square with a finger to the target line.
-- When the square touches the line, the game is completed.
+- A large game piece and a thick target line are shown in the play area.
+- The piece and target line are always the same random rainbow color.
+- The piece starts on either the left or right side at random, and the target line appears on the opposite side.
+- The child drags the piece with a finger to the target line.
+- When the piece touches the line, the game is completed.
 
 ## Reward behavior
 
 - When the game is finished, a reward overlay appears.
-- The reward screen plays a local video from the `videos/` folder, with a fallback flower video if needed.
-- The reward remains visible for 20 seconds, then the game auto-restarts.
-- The app tracks how many times the game has been completed and advances the reward playback by 20-second intervals between completions.
+- The reward screen plays a local video from the `videos/` folder.
+- If the reward video fails, a fallback flower video is used.
+- The reward remains visible for 10 seconds, then the game auto-restarts.
+- The game tracks completion count in memory and advances the reward playback by 20-second intervals between completions.
 
 ## UX details
 
-- Fullscreen button is available for app-like presentation.
+- App-like fullscreen button is available.
 - Fullscreen overlay display is supported.
-- Drag hit-area is expanded so the square is easier to grab.
-- The target line is thicker and larger for easier visual focus.
+- Drag hit-area is expanded for easier grabbing.
+- Target line is thicker and larger for easier visual focus.
