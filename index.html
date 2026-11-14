@@ -155,7 +155,16 @@
       }
 
       function setInitialPositions() {
-        piece.style.left = `${Math.max(18, gameArea.clientWidth * 0.05)}px`;
+        const placeBoxOnRight = Math.random() < 0.5;
+
+        if (placeBoxOnRight) {
+          piece.style.left = `${Math.max(18, gameArea.clientWidth - piece.offsetWidth - 24)}px`;
+          target.style.left = `${Math.max(18, gameArea.clientWidth * 0.05)}px`;
+        } else {
+          piece.style.left = `${Math.max(18, gameArea.clientWidth * 0.05)}px`;
+          target.style.left = `${Math.max(18, gameArea.clientWidth - target.offsetWidth - 24)}px`;
+        }
+
         centerVertically(piece);
         centerVertically(target);
       }
