@@ -41,3 +41,6 @@ all pieces have same color, and target too
 after all pieces are moved to the target the game is finished and reward is opened
 a piece which is moved to the target disapears, so it will not distract a child from moving another piece
 Do not commit changes until I approve and test, don't forget to update readme
+
+## Utils
+- How to start a server: python3 -m http.server 8765
