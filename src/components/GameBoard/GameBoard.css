@@ -1,0 +1,35 @@
+.game-board {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.target-line {
+  position: absolute;
+  border-radius: 20px;
+  box-shadow: 0 0 0 8px rgba(0, 0, 0, 0.03);
+}
+
+.piece {
+  position: absolute;
+  border: none;
+  border-radius: 28px;
+  cursor: grab;
+  touch-action: none;
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.18),
+    0 3px 10px rgba(0, 0, 0, 0.16);
+}
+
+.piece:active {
+  cursor: grabbing;
+}
+
+.piece:disabled {
+  pointer-events: none;
+}
+
+.piece-hit-area {
+  position: absolute;
+}

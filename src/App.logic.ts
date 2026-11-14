@@ -1,0 +1,86 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useFullscreenButtonLogic } from './components/FullscreenButton/FullscreenButton.logic'
+import {
+  useGameBoardLogic,
+  type GameBoardProps,
+} from './components/GameBoard/GameBoard.logic'
+import {
+  type RewardOverlayProps,
+  buildRewardOverlayProps,
+} from './components/RewardOverlay/RewardOverlay.logic'
+import { REWARD_STEP_SECONDS, REWARD_VISIBLE_MS } from './logic/game.constants'
+import { createGameRound, type GameRound } from './logic/round.logic'
+
+type UseAppLogicResult = {
+  completionCount: number
+  gameBoardProps: GameBoardProps
+  rewardOverlayProps: RewardOverlayProps
+  fullscreenButtonProps: ReturnType<typeof useFullscreenButtonLogic>
+}
+
+export function useAppLogic(): UseAppLogicResult {
+  const [progress, setProgress] = useState({
+    completionCount: 0,
+    rewardStartSeconds: 0,
+  })
+  const [isRewardVisible, setIsRewardVisible] = useState(false)
+  const [round, setRound] = useState<GameRound>(() => createGameRound())
+  const [roundIndex, setRoundIndex] = useState(0)
+  const completionLockedRef = useRef(false)
+
+  const handleRoundComplete = useCallback(() => {
+    if (completionLockedRef.current || isRewardVisible) {
+      return
+    }
+
+    completionLockedRef.current = true
+    setProgress((current) => ({
+      completionCount: current.completionCount + 1,
+      rewardStartSeconds: current.completionCount * REWARD_STEP_SECONDS,
+    }))
+    setIsRewardVisible(true)
+  }, [isRewardVisible])
+
+  useEffect(() => {
+    if (!isRewardVisible) {
+      completionLockedRef.current = false
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsRewardVisible(false)
+      setRound(createGameRound())
+      setRoundIndex((current) => current + 1)
+      completionLockedRef.current = false
+    }, REWARD_VISIBLE_MS)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [isRewardVisible])
+
+  const gameBoardProps = useGameBoardLogic({
+    color: round.color,
+    pieceSide: round.pieceSide,
+    targetSide: round.targetSide,
+    resetToken: roundIndex,
+    disabled: isRewardVisible,
+    onSuccess: handleRoundComplete,
+  })
+  const rewardOverlayProps = useMemo(
+    () =>
+      buildRewardOverlayProps({
+        visible: isRewardVisible,
+        startSeconds: progress.rewardStartSeconds,
+      }),
+    [isRewardVisible, progress.rewardStartSeconds],
+  )
+  const fullscreenButtonProps = useFullscreenButtonLogic()
+
+  return {
+    completionCount: progress.completionCount,
+    gameBoardProps,
+    rewardOverlayProps,
+    fullscreenButtonProps,
+  }
+}
