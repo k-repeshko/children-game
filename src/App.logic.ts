@@ -8,7 +8,7 @@ import {
   type RewardOverlayProps,
   buildRewardOverlayProps,
 } from './components/RewardOverlay/RewardOverlay.logic'
-import { REWARD_STEP_SECONDS, REWARD_VISIBLE_MS } from './logic/game.constants'
+import { REWARD_STEP_SECONDS } from './logic/game.constants'
 import { createGameRound, type GameRound } from './logic/round.logic'
 
 type UseAppLogicResult = {
@@ -52,7 +52,7 @@ export function useAppLogic(): UseAppLogicResult {
       setRound(createGameRound())
       setRoundIndex((current) => current + 1)
       completionLockedRef.current = false
-    }, REWARD_VISIBLE_MS)
+    }, REWARD_STEP_SECONDS * 1000)
 
     return () => {
       window.clearTimeout(timeoutId)
