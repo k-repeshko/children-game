@@ -8,7 +8,6 @@ export function RewardOverlay({ visible, startSeconds }: RewardOverlayProps) {
   const {
     videoRef,
     sourcePath,
-    showNativeControls,
     showManualPlayButton,
     manualPlayButtonText,
     onManualPlay,
@@ -20,25 +19,24 @@ export function RewardOverlay({ visible, startSeconds }: RewardOverlayProps) {
     startSeconds,
   })
 
-  if (!visible) {
-    return null
-  }
-
   return (
-    <section className="reward-overlay" aria-live="polite">
+    <section
+      className={`reward-overlay${visible ? '' : ' reward-overlay--hidden'}`}
+      aria-live="polite"
+      aria-hidden={!visible}
+    >
       <div className="reward-content">
         <video
           ref={videoRef}
           className="reward-video"
           src={sourcePath}
-          autoPlay={!showNativeControls}
-          controls={showNativeControls}
+          autoPlay
           playsInline
           onLoadedMetadata={onVideoLoaded}
           onCanPlay={onVideoCanPlay}
           onPlaying={onVideoPlaying}
         />
-        {showManualPlayButton ? (
+        {visible && showManualPlayButton ? (
           <button type="button" className="reward-play-button" onClick={onManualPlay}>
             {manualPlayButtonText}
           </button>
