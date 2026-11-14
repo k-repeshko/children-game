@@ -5,7 +5,17 @@ import {
 } from './RewardOverlay.logic'
 
 export function RewardOverlay({ visible, startSeconds }: RewardOverlayProps) {
-  const { videoRef, sourcePath, onVideoLoaded } = useRewardOverlayLogic({
+  const {
+    videoRef,
+    sourcePath,
+    showNativeControls,
+    showManualPlayButton,
+    manualPlayButtonText,
+    onManualPlay,
+    onVideoLoaded,
+    onVideoCanPlay,
+    onVideoPlaying,
+  } = useRewardOverlayLogic({
     visible,
     startSeconds,
   })
@@ -21,10 +31,18 @@ export function RewardOverlay({ visible, startSeconds }: RewardOverlayProps) {
           ref={videoRef}
           className="reward-video"
           src={sourcePath}
-          autoPlay
+          autoPlay={!showNativeControls}
+          controls={showNativeControls}
           playsInline
           onLoadedMetadata={onVideoLoaded}
+          onCanPlay={onVideoCanPlay}
+          onPlaying={onVideoPlaying}
         />
+        {showManualPlayButton ? (
+          <button type="button" className="reward-play-button" onClick={onManualPlay}>
+            {manualPlayButtonText}
+          </button>
+        ) : null}
       </div>
     </section>
   )
