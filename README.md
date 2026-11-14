@@ -13,12 +13,15 @@
 
 - When the game is finished, a reward overlay appears.
 - The reward screen plays a local video from the `videos/` folder.
-- The reward remains visible for 20 seconds after video playback starts, then the game auto-restarts.
-- The game tracks completion count in memory and advances the reward playback by 20-second intervals between completions.
+- Reward duration is configurable in Settings via `Reward Seconds`.
+- `Reward Seconds` accepts values from 1 to 20.
+- The reward remains visible for the configured duration after video playback starts, then the game auto-restarts.
+- The game tracks completion count in memory and advances the reward playback by configured intervals between completions.
 
 ## UX details
 
 - App-like fullscreen button is available.
+- Settings button is available to the left of the fullscreen button.
 - Fullscreen overlay display is supported.
 - Drag hit-area is expanded for easier grabbing.
 - Target line is thicker and larger for easier visual focus.
@@ -28,3 +31,4 @@
 - Reward video path: `public/videos/reward.m4v`
 - Video is played locally by the browser from `/videos/*`.
 - Reward playback uses **Tap to start video** on all devices.
+- Settings are saved in local storage.

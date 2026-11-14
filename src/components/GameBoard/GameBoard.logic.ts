@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { CSSProperties, PointerEvent as ReactPointerEvent, RefObject } from 'react'
+import type { CSSProperties, PointerEvent as ReactPointerEvent, RefCallback } from 'react'
 import {
   BOARD_EDGE_GAP,
   DRAG_HIT_AREA_PADDING,
@@ -36,7 +36,7 @@ export type UseGameBoardLogicInput = {
 }
 
 export type GameBoardProps = {
-  boardRef: RefObject<HTMLElement | null>
+  boardRef: RefCallback<HTMLElement>
   targetStyle: CSSProperties
   pieceStyle: CSSProperties
   hitAreaStyle: CSSProperties
@@ -112,7 +112,8 @@ export function useGameBoardLogic({
   disabled,
   onSuccess,
 }: UseGameBoardLogicInput): GameBoardProps {
-  const boardRef = useRef<HTMLElement | null>(null)
+  const [boardElement, setBoardElement] = useState<HTMLElement | null>(null)
+  const rafIdRef = useRef<number | null>(null)
   const dragOffsetRef = useRef<Point>({ x: 0, y: 0 })
   const [boardSize, setBoardSize] = useState<Size>({
     width: window.innerWidth,
@@ -145,54 +146,76 @@ export function useGameBoardLogic({
   }, [pieceSide, boardSize, resetToken])
 
   useEffect(() => {
-    const element = boardRef.current
-    if (!element) {
+    if (!boardElement) {
       return
     }
 
     const updateBoardSize = () => {
-      const rect = element.getBoundingClientRect()
+      const rect = boardElement.getBoundingClientRect()
+      const width = rect.width > 0 ? rect.width : window.innerWidth
+      const height = rect.height > 0 ? rect.height : window.innerHeight
+
       setBoardSize({
-        width: rect.width,
-        height: rect.height,
+        width,
+        height,
       })
+
+      if (rect.width === 0 || rect.height === 0) {
+        if (rafIdRef.current !== null) {
+          window.cancelAnimationFrame(rafIdRef.current)
+        }
+        rafIdRef.current = window.requestAnimationFrame(updateBoardSize)
+      } else if (rafIdRef.current !== null) {
+        window.cancelAnimationFrame(rafIdRef.current)
+        rafIdRef.current = null
+      }
     }
 
     updateBoardSize()
     const resizeObserver = new ResizeObserver(updateBoardSize)
-    resizeObserver.observe(element)
+    resizeObserver.observe(boardElement)
+    window.addEventListener('resize', updateBoardSize)
 
     return () => {
       resizeObserver.disconnect()
+      window.removeEventListener('resize', updateBoardSize)
+      if (rafIdRef.current !== null) {
+        window.cancelAnimationFrame(rafIdRef.current)
+        rafIdRef.current = null
+      }
     }
+  }, [boardElement])
+
+  const boardRef = useCallback<RefCallback<HTMLElement>>((element) => {
+    setBoardElement(element)
   }, [])
 
   const onPiecePointerDown = useCallback(
     (event: ReactPointerEvent<HTMLButtonElement>) => {
-      if (disabled || !boardRef.current) {
+      if (disabled || !boardElement) {
         return
       }
 
       const targetElement = event.currentTarget
       targetElement.setPointerCapture(event.pointerId)
 
-      const pointer = getEventBoardCoordinates(event, boardRef.current)
+      const pointer = getEventBoardCoordinates(event, boardElement)
       dragOffsetRef.current = {
         x: pointer.x - pieceCenter.x,
         y: pointer.y - pieceCenter.y,
       }
       setIsDragging(true)
     },
-    [disabled, pieceCenter],
+    [boardElement, disabled, pieceCenter],
   )
 
   const onPiecePointerMove = useCallback(
     (event: ReactPointerEvent<HTMLButtonElement>) => {
-      if (disabled || !isDragging || !boardRef.current) {
+      if (disabled || !isDragging || !boardElement) {
         return
       }
 
-      const pointer = getEventBoardCoordinates(event, boardRef.current)
+      const pointer = getEventBoardCoordinates(event, boardElement)
       const nextCenter: Point = {
         x: clamp(
           pointer.x - dragOffsetRef.current.x,
@@ -209,7 +232,7 @@ export function useGameBoardLogic({
       setPieceCenter(nextCenter)
       verifySuccess(nextCenter)
     },
-    [disabled, isDragging, boardSize, verifySuccess],
+    [boardElement, disabled, isDragging, boardSize, verifySuccess],
   )
 
   const onPiecePointerUp = useCallback(

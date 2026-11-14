@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useFullscreenButtonLogic } from './components/FullscreenButton/FullscreenButton.logic'
 import {
   useGameBoardLogic,
@@ -8,17 +9,31 @@ import {
   type RewardOverlayProps,
   buildRewardOverlayProps,
 } from './components/RewardOverlay/RewardOverlay.logic'
-import { REWARD_STEP_SECONDS } from './logic/game.constants'
+import type { SettingsPageProps } from './components/SettingsPage/SettingsPage.logic'
+import { useSettingsButtonLogic } from './components/SettingsButton/SettingsButton.logic'
 import { createGameRound, type GameRound } from './logic/round.logic'
+import {
+  loadGameSettings,
+  MAX_REWARD_SECONDS,
+  parseRewardSecondsInput,
+  saveGameSettings,
+} from './logic/settings.logic'
 
 type UseAppLogicResult = {
   completionCount: number
   gameBoardProps: GameBoardProps
   rewardOverlayProps: RewardOverlayProps
+  settingsPageProps: SettingsPageProps
+  settingsButtonProps: ReturnType<typeof useSettingsButtonLogic>
   fullscreenButtonProps: ReturnType<typeof useFullscreenButtonLogic>
 }
 
 export function useAppLogic(): UseAppLogicResult {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [rewardSeconds, setRewardSeconds] = useState(() => loadGameSettings().rewardSeconds)
+  const [rewardSecondsInput, setRewardSecondsInput] = useState(() => String(rewardSeconds))
+  const [settingsErrorMessage, setSettingsErrorMessage] = useState<string | null>(null)
   const [progress, setProgress] = useState({
     completionCount: 0,
     rewardStartSeconds: 0,
@@ -26,6 +41,7 @@ export function useAppLogic(): UseAppLogicResult {
   const [isRewardVisible, setIsRewardVisible] = useState(false)
   const [round, setRound] = useState<GameRound>(() => createGameRound())
   const [roundIndex, setRoundIndex] = useState(0)
+  const previousPathnameRef = useRef(location.pathname)
   const completionLockedRef = useRef(false)
   const rewardCloseTimeoutRef = useRef<number | null>(null)
 
@@ -53,10 +69,10 @@ export function useAppLogic(): UseAppLogicResult {
     completionLockedRef.current = true
     setProgress((current) => ({
       completionCount: current.completionCount + 1,
-      rewardStartSeconds: current.completionCount * REWARD_STEP_SECONDS,
+      rewardStartSeconds: current.completionCount * rewardSeconds,
     }))
     setIsRewardVisible(true)
-  }, [clearRewardCloseTimeout, isRewardVisible])
+  }, [clearRewardCloseTimeout, isRewardVisible, rewardSeconds])
 
   const handleRewardPlaybackStarted = useCallback(() => {
     if (!isRewardVisible || rewardCloseTimeoutRef.current !== null) {
@@ -65,8 +81,64 @@ export function useAppLogic(): UseAppLogicResult {
 
     rewardCloseTimeoutRef.current = window.setTimeout(() => {
       closeRewardRound()
-    }, REWARD_STEP_SECONDS * 1000)
-  }, [closeRewardRound, isRewardVisible])
+    }, rewardSeconds * 1000)
+  }, [closeRewardRound, isRewardVisible, rewardSeconds])
+
+  const onRewardSecondsInputChange = useCallback((value: string) => {
+    setRewardSecondsInput(value)
+    setSettingsErrorMessage(null)
+  }, [])
+
+  const onSaveSettings = useCallback(() => {
+    const parsedRewardSeconds = parseRewardSecondsInput(rewardSecondsInput)
+    if (parsedRewardSeconds === null) {
+      setSettingsErrorMessage(
+        `Reward Seconds must be a whole number from 1 to ${MAX_REWARD_SECONDS}.`,
+      )
+      return
+    }
+
+    try {
+      saveGameSettings({
+        rewardSeconds: parsedRewardSeconds,
+      })
+    } catch (error) {
+      console.error('Failed to save game settings.', error)
+      setSettingsErrorMessage('Failed to save settings. Please try again.')
+      return
+    }
+
+    setRewardSeconds(parsedRewardSeconds)
+    setSettingsErrorMessage(null)
+    navigate('/')
+  }, [navigate, rewardSecondsInput])
+
+  useEffect(() => {
+    if (location.pathname !== '/settings') {
+      return
+    }
+
+    setRewardSecondsInput(String(rewardSeconds))
+    setSettingsErrorMessage(null)
+  }, [location.pathname, rewardSeconds])
+
+  useEffect(() => {
+    if (location.pathname === '/settings') {
+      setIsRewardVisible(false)
+      clearRewardCloseTimeout()
+      completionLockedRef.current = false
+    }
+
+    if (previousPathnameRef.current === '/settings' && location.pathname === '/') {
+      setIsRewardVisible(false)
+      clearRewardCloseTimeout()
+      completionLockedRef.current = false
+      setRound(createGameRound())
+      setRoundIndex((current) => current + 1)
+    }
+
+    previousPathnameRef.current = location.pathname
+  }, [clearRewardCloseTimeout, location.pathname])
 
   useEffect(() => {
     if (!isRewardVisible) {
@@ -99,11 +171,24 @@ export function useAppLogic(): UseAppLogicResult {
     [isRewardVisible, progress.rewardStartSeconds, handleRewardPlaybackStarted],
   )
   const fullscreenButtonProps = useFullscreenButtonLogic()
+  const settingsButtonProps = useSettingsButtonLogic()
+  const settingsPageProps = useMemo(
+    () => ({
+      rewardSecondsInput,
+      maxRewardSeconds: MAX_REWARD_SECONDS,
+      errorMessage: settingsErrorMessage,
+      onRewardSecondsInputChange,
+      onSave: onSaveSettings,
+    }),
+    [onRewardSecondsInputChange, onSaveSettings, rewardSecondsInput, settingsErrorMessage],
+  )
 
   return {
     completionCount: progress.completionCount,
     gameBoardProps,
     rewardOverlayProps,
+    settingsPageProps,
+    settingsButtonProps,
     fullscreenButtonProps,
   }
 }

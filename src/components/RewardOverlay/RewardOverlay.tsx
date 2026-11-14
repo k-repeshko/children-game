@@ -23,12 +23,12 @@ export function RewardOverlay({
     onPlaybackStarted,
   })
 
+  if (!visible) {
+    return null
+  }
+
   return (
-    <section
-      className={`reward-overlay${visible ? '' : ' reward-overlay--hidden'}`}
-      aria-live="polite"
-      aria-hidden={!visible}
-    >
+    <section className="reward-overlay" aria-live="polite">
       <div className="reward-content">
         <div className="reward-video-wrap">
           <video
@@ -39,7 +39,7 @@ export function RewardOverlay({
             onLoadedMetadata={onVideoLoaded}
             onPlaying={onVideoPlaying}
           />
-          {visible && showManualPlayButton ? (
+          {showManualPlayButton ? (
             <button
               type="button"
               className="reward-play-button"
