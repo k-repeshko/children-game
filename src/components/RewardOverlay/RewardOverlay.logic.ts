@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
 const PRIMARY_REWARD_SOURCE = '/videos/reward.m4v'
@@ -45,6 +45,7 @@ export function useRewardOverlayLogic({
   onPlaybackStarted,
 }: UseRewardOverlayLogicInput): UseRewardOverlayLogicResult {
   const videoRef = useRef<HTMLVideoElement | null>(null)
+  const [showManualPlayButton, setShowManualPlayButton] = useState(false)
 
   const startPlayback = useCallback(() => {
     const element = videoRef.current
@@ -52,6 +53,7 @@ export function useRewardOverlayLogic({
       return
     }
 
+    setShowManualPlayButton(false)
     void element.play().catch(() => undefined)
   }, [])
 
@@ -61,8 +63,11 @@ export function useRewardOverlayLogic({
       if (element) {
         element.pause()
       }
+      setShowManualPlayButton(false)
       return
     }
+
+    setShowManualPlayButton(true)
   }, [visible])
 
   const onVideoLoaded = useCallback(() => {
@@ -88,7 +93,7 @@ export function useRewardOverlayLogic({
   return {
     videoRef,
     sourcePath: PRIMARY_REWARD_SOURCE,
-    showManualPlayButton: visible,
+    showManualPlayButton,
     manualPlayButtonText: 'Tap to start video',
     onManualPlay: startPlayback,
     onVideoLoaded,
