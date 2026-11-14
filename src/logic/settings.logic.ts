@@ -2,18 +2,26 @@ import { REWARD_STEP_SECONDS } from './game.constants'
 
 const SETTINGS_STORAGE_KEY = 'game-settings'
 export const MAX_REWARD_SECONDS = 20
+export const MIN_SHAPES = 1
+export const MAX_SHAPES = 9
 
 export type GameSettings = {
   rewardSeconds: number
+  shapes: number
 }
 
 function isValidRewardSeconds(value: number): boolean {
   return Number.isInteger(value) && value > 0 && value <= MAX_REWARD_SECONDS
 }
 
+function isValidShapes(value: number): boolean {
+  return Number.isInteger(value) && value >= MIN_SHAPES && value <= MAX_SHAPES
+}
+
 export function getDefaultSettings(): GameSettings {
   return {
     rewardSeconds: REWARD_STEP_SECONDS,
+    shapes: MIN_SHAPES,
   }
 }
 
@@ -28,13 +36,20 @@ export function loadGameSettings(): GameSettings {
 
     const parsed = JSON.parse(stored) as Partial<GameSettings>
     const rewardSeconds = parsed.rewardSeconds
-    if (typeof rewardSeconds !== 'number' || !isValidRewardSeconds(rewardSeconds)) {
-      console.warn('Invalid stored rewardSeconds. Falling back to default settings.')
+    const shapes = parsed.shapes
+    if (
+      typeof rewardSeconds !== 'number' ||
+      !isValidRewardSeconds(rewardSeconds) ||
+      typeof shapes !== 'number' ||
+      !isValidShapes(shapes)
+    ) {
+      console.warn('Invalid stored settings. Falling back to default settings.')
       return defaults
     }
 
     return {
       rewardSeconds,
+      shapes,
     }
   } catch (error) {
     console.error('Failed to load game settings from local storage.', error)
@@ -45,6 +60,9 @@ export function loadGameSettings(): GameSettings {
 export function saveGameSettings(settings: GameSettings): void {
   if (!isValidRewardSeconds(settings.rewardSeconds)) {
     throw new Error('Reward seconds must be a positive integer.')
+  }
+  if (!isValidShapes(settings.shapes)) {
+    throw new Error(`Shapes must be an integer from ${MIN_SHAPES} to ${MAX_SHAPES}.`)
   }
 
   window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings))
@@ -58,6 +76,20 @@ export function parseRewardSecondsInput(input: string): number | null {
 
   const numeric = Number(normalized)
   if (!isValidRewardSeconds(numeric)) {
+    return null
+  }
+
+  return numeric
+}
+
+export function parseShapesInput(input: string): number | null {
+  const normalized = input.trim()
+  if (!normalized) {
+    return null
+  }
+
+  const numeric = Number(normalized)
+  if (!isValidShapes(numeric)) {
     return null
   }
 

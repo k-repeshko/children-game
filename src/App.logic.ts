@@ -14,7 +14,10 @@ import { useSettingsButtonLogic } from './components/SettingsButton/SettingsButt
 import { createGameRound, type GameRound } from './logic/round.logic'
 import {
   loadGameSettings,
+  MAX_SHAPES,
   MAX_REWARD_SECONDS,
+  MIN_SHAPES,
+  parseShapesInput,
   parseRewardSecondsInput,
   saveGameSettings,
 } from './logic/settings.logic'
@@ -31,8 +34,10 @@ type UseAppLogicResult = {
 export function useAppLogic(): UseAppLogicResult {
   const navigate = useNavigate()
   const location = useLocation()
-  const [rewardSeconds, setRewardSeconds] = useState(() => loadGameSettings().rewardSeconds)
+  const [settings, setSettings] = useState(() => loadGameSettings())
+  const rewardSeconds = settings.rewardSeconds
   const [rewardSecondsInput, setRewardSecondsInput] = useState(() => String(rewardSeconds))
+  const [shapesInput, setShapesInput] = useState(() => String(settings.shapes))
   const [settingsErrorMessage, setSettingsErrorMessage] = useState<string | null>(null)
   const [progress, setProgress] = useState({
     completionCount: 0,
@@ -89,6 +94,11 @@ export function useAppLogic(): UseAppLogicResult {
     setSettingsErrorMessage(null)
   }, [])
 
+  const onShapesInputChange = useCallback((value: string) => {
+    setShapesInput(value)
+    setSettingsErrorMessage(null)
+  }, [])
+
   const onSaveSettings = useCallback(() => {
     const parsedRewardSeconds = parseRewardSecondsInput(rewardSecondsInput)
     if (parsedRewardSeconds === null) {
@@ -97,10 +107,16 @@ export function useAppLogic(): UseAppLogicResult {
       )
       return
     }
+    const parsedShapes = parseShapesInput(shapesInput)
+    if (parsedShapes === null) {
+      setSettingsErrorMessage(`Shapes must be a whole number from ${MIN_SHAPES} to ${MAX_SHAPES}.`)
+      return
+    }
 
     try {
       saveGameSettings({
         rewardSeconds: parsedRewardSeconds,
+        shapes: parsedShapes,
       })
     } catch (error) {
       console.error('Failed to save game settings.', error)
@@ -108,10 +124,13 @@ export function useAppLogic(): UseAppLogicResult {
       return
     }
 
-    setRewardSeconds(parsedRewardSeconds)
+    setSettings({
+      rewardSeconds: parsedRewardSeconds,
+      shapes: parsedShapes,
+    })
     setSettingsErrorMessage(null)
     navigate('/')
-  }, [navigate, rewardSecondsInput])
+  }, [navigate, rewardSecondsInput, shapesInput])
 
   useEffect(() => {
     if (location.pathname !== '/settings') {
@@ -119,8 +138,9 @@ export function useAppLogic(): UseAppLogicResult {
     }
 
     setRewardSecondsInput(String(rewardSeconds))
+    setShapesInput(String(settings.shapes))
     setSettingsErrorMessage(null)
-  }, [location.pathname, rewardSeconds])
+  }, [location.pathname, rewardSeconds, settings.shapes])
 
   useEffect(() => {
     if (location.pathname === '/settings') {
@@ -176,11 +196,22 @@ export function useAppLogic(): UseAppLogicResult {
     () => ({
       rewardSecondsInput,
       maxRewardSeconds: MAX_REWARD_SECONDS,
+      shapesInput,
+      minShapes: MIN_SHAPES,
+      maxShapes: MAX_SHAPES,
       errorMessage: settingsErrorMessage,
       onRewardSecondsInputChange,
+      onShapesInputChange,
       onSave: onSaveSettings,
     }),
-    [onRewardSecondsInputChange, onSaveSettings, rewardSecondsInput, settingsErrorMessage],
+    [
+      onRewardSecondsInputChange,
+      onShapesInputChange,
+      onSaveSettings,
+      rewardSecondsInput,
+      shapesInput,
+      settingsErrorMessage,
+    ],
   )
 
   return {

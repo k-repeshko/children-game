@@ -15,6 +15,7 @@
 - The reward screen plays a local video from the `videos/` folder.
 - Reward duration is configurable in Settings via `Reward Seconds`.
 - `Reward Seconds` accepts values from 1 to 20.
+- `Shapes` accepts values from 1 to 9 (reserved for future gameplay logic).
 - The reward remains visible for the configured duration after video playback starts, then the game auto-restarts.
 - The game tracks completion count in memory and advances the reward playback by configured intervals between completions.
 

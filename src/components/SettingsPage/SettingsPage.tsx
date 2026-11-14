@@ -4,8 +4,12 @@ import { type SettingsPageProps } from './SettingsPage.logic'
 export function SettingsPage({
   rewardSecondsInput,
   maxRewardSeconds,
+  shapesInput,
+  minShapes,
+  maxShapes,
   errorMessage,
   onRewardSecondsInputChange,
+  onShapesInputChange,
   onSave,
 }: SettingsPageProps) {
   return (
@@ -22,6 +26,20 @@ export function SettingsPage({
           value={rewardSecondsInput}
           onChange={(event) => {
             onRewardSecondsInputChange(event.target.value)
+          }}
+        />
+      </label>
+      <label className="settings-field">
+        <span className="settings-label">Shapes</span>
+        <input
+          className="settings-input"
+          type="number"
+          min={minShapes}
+          max={maxShapes}
+          step={1}
+          value={shapesInput}
+          onChange={(event) => {
+            onShapesInputChange(event.target.value)
           }}
         />
       </label>
