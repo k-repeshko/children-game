@@ -13,7 +13,7 @@
 
 - When the game is finished, a reward overlay appears.
 - The reward screen plays a local video from the `videos/` folder.
-- The reward remains visible for 20 seconds, then the game auto-restarts.
+- The reward remains visible for 20 seconds after video playback starts, then the game auto-restarts.
 - The game tracks completion count in memory and advances the reward playback by 20-second intervals between completions.
 
 ## UX details

@@ -4,7 +4,11 @@ import {
   type RewardOverlayProps,
 } from './RewardOverlay.logic'
 
-export function RewardOverlay({ visible, startSeconds }: RewardOverlayProps) {
+export function RewardOverlay({
+  visible,
+  startSeconds,
+  onPlaybackStarted,
+}: RewardOverlayProps) {
   const {
     videoRef,
     sourcePath,
@@ -12,9 +16,11 @@ export function RewardOverlay({ visible, startSeconds }: RewardOverlayProps) {
     manualPlayButtonText,
     onManualPlay,
     onVideoLoaded,
+    onVideoPlaying,
   } = useRewardOverlayLogic({
     visible,
     startSeconds,
+    onPlaybackStarted,
   })
 
   return (
@@ -30,6 +36,7 @@ export function RewardOverlay({ visible, startSeconds }: RewardOverlayProps) {
           src={sourcePath}
           playsInline
           onLoadedMetadata={onVideoLoaded}
+          onPlaying={onVideoPlaying}
         />
         {visible && showManualPlayButton ? (
           <button type="button" className="reward-play-button" onClick={onManualPlay}>

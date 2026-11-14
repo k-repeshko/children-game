@@ -24,6 +24,7 @@ export function useAppLogic(): UseAppLogicResult {
     rewardStartSeconds: 0,
   })
   const [isRewardVisible, setIsRewardVisible] = useState(false)
+  const [isRewardPlaybackStarted, setIsRewardPlaybackStarted] = useState(false)
   const [round, setRound] = useState<GameRound>(() => createGameRound())
   const [roundIndex, setRoundIndex] = useState(0)
   const completionLockedRef = useRef(false)
@@ -38,7 +39,16 @@ export function useAppLogic(): UseAppLogicResult {
       completionCount: current.completionCount + 1,
       rewardStartSeconds: current.completionCount * REWARD_STEP_SECONDS,
     }))
+    setIsRewardPlaybackStarted(false)
     setIsRewardVisible(true)
+  }, [isRewardVisible, isRewardPlaybackStarted])
+
+  const handleRewardPlaybackStarted = useCallback(() => {
+    if (!isRewardVisible) {
+      return
+    }
+
+    setIsRewardPlaybackStarted(true)
   }, [isRewardVisible])
 
   useEffect(() => {
@@ -47,8 +57,13 @@ export function useAppLogic(): UseAppLogicResult {
       return
     }
 
+    if (!isRewardPlaybackStarted) {
+      return
+    }
+
     const timeoutId = window.setTimeout(() => {
       setIsRewardVisible(false)
+      setIsRewardPlaybackStarted(false)
       setRound(createGameRound())
       setRoundIndex((current) => current + 1)
       completionLockedRef.current = false
@@ -72,8 +87,9 @@ export function useAppLogic(): UseAppLogicResult {
       buildRewardOverlayProps({
         visible: isRewardVisible,
         startSeconds: progress.rewardStartSeconds,
+        onPlaybackStarted: handleRewardPlaybackStarted,
       }),
-    [isRewardVisible, progress.rewardStartSeconds],
+    [isRewardVisible, progress.rewardStartSeconds, handleRewardPlaybackStarted],
   )
   const fullscreenButtonProps = useFullscreenButtonLogic()
 

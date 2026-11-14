@@ -6,6 +6,7 @@ const PRIMARY_REWARD_SOURCE = '/videos/reward.m4v'
 type UseRewardOverlayLogicInput = {
   visible: boolean
   startSeconds: number
+  onPlaybackStarted: () => void
 }
 
 export type RewardOverlayProps = UseRewardOverlayLogicInput
@@ -17,26 +18,31 @@ type UseRewardOverlayLogicResult = {
   manualPlayButtonText: string
   onManualPlay: () => void
   onVideoLoaded: () => void
+  onVideoPlaying: () => void
 }
 
 type BuildRewardOverlayPropsInput = {
   visible: boolean
   startSeconds: number
+  onPlaybackStarted: () => void
 }
 
 export function buildRewardOverlayProps({
   visible,
   startSeconds,
+  onPlaybackStarted,
 }: BuildRewardOverlayPropsInput): RewardOverlayProps {
   return {
     visible,
     startSeconds,
+    onPlaybackStarted,
   }
 }
 
 export function useRewardOverlayLogic({
   visible,
   startSeconds,
+  onPlaybackStarted,
 }: UseRewardOverlayLogicInput): UseRewardOverlayLogicResult {
   const videoRef = useRef<HTMLVideoElement | null>(null)
 
@@ -75,6 +81,10 @@ export function useRewardOverlayLogic({
     element.currentTime = effectiveStart
   }, [visible, startSeconds])
 
+  const onVideoPlaying = useCallback(() => {
+    onPlaybackStarted()
+  }, [onPlaybackStarted])
+
   return {
     videoRef,
     sourcePath: PRIMARY_REWARD_SOURCE,
@@ -82,5 +92,6 @@ export function useRewardOverlayLogic({
     manualPlayButtonText: 'Tap to start video',
     onManualPlay: startPlayback,
     onVideoLoaded,
+    onVideoPlaying,
   }
 }
