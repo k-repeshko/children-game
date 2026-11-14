@@ -23,3 +23,21 @@
 - Fullscreen overlay display is supported.
 - Drag hit-area is expanded for easier grabbing.
 - Target line is thicker and larger for easier visual focus.
+
+## Ideas
+
+### Multiple pieces
+check read me to understand how current game works
+make the following update:
+on the left of Full Screen button have a Settings button
+Settings button opens Settings page (a page, not a modal window)
+Settings page has an input for number of "Pieces"
+Settings page has a save button
+save button saves json with settings like this { "pieces": 2 }  to local storage
+every time game opens it reads settings
+game shows pieces according to settings
+target is still the only one
+all pieces have same color, and target too
+after all pieces are moved to the target the game is finished and reward is opened
+a piece which is moved to the target disapears, so it will not distract a child from moving another piece
+Do not commit changes until I approve and test, don't forget to update readme
