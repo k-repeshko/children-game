@@ -13,7 +13,7 @@ export function RewardOverlay({
     videoRef,
     sourcePath,
     showManualPlayButton,
-    manualPlayButtonText,
+    manualPlayButtonLabel,
     onManualPlay,
     onVideoLoaded,
     onVideoPlaying,
@@ -30,19 +30,26 @@ export function RewardOverlay({
       aria-hidden={!visible}
     >
       <div className="reward-content">
-        <video
-          ref={videoRef}
-          className="reward-video"
-          src={sourcePath}
-          playsInline
-          onLoadedMetadata={onVideoLoaded}
-          onPlaying={onVideoPlaying}
-        />
-        {visible && showManualPlayButton ? (
-          <button type="button" className="reward-play-button" onClick={onManualPlay}>
-            {manualPlayButtonText}
-          </button>
-        ) : null}
+        <div className="reward-video-wrap">
+          <video
+            ref={videoRef}
+            className="reward-video"
+            src={sourcePath}
+            playsInline
+            onLoadedMetadata={onVideoLoaded}
+            onPlaying={onVideoPlaying}
+          />
+          {visible && showManualPlayButton ? (
+            <button
+              type="button"
+              className="reward-play-button"
+              aria-label={manualPlayButtonLabel}
+              onClick={onManualPlay}
+            >
+              <span className="reward-play-icon" aria-hidden="true" />
+            </button>
+          ) : null}
+        </div>
       </div>
     </section>
   )

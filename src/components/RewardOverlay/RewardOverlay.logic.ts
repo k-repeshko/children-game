@@ -15,7 +15,7 @@ type UseRewardOverlayLogicResult = {
   videoRef: RefObject<HTMLVideoElement | null>
   sourcePath: typeof PRIMARY_REWARD_SOURCE
   showManualPlayButton: boolean
-  manualPlayButtonText: string
+  manualPlayButtonLabel: string
   onManualPlay: () => void
   onVideoLoaded: () => void
   onVideoPlaying: () => void
@@ -94,7 +94,7 @@ export function useRewardOverlayLogic({
     videoRef,
     sourcePath: PRIMARY_REWARD_SOURCE,
     showManualPlayButton,
-    manualPlayButtonText: 'Tap to start video',
+    manualPlayButtonLabel: 'Play video',
     onManualPlay: startPlayback,
     onVideoLoaded,
     onVideoPlaying,
