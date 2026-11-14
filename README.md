@@ -27,4 +27,4 @@
 
 - Reward video path: `public/videos/reward.m4v`
 - Video is played locally by the browser from `/videos/*`.
-- On iPad/touch devices, reward playback uses **Tap to start video**.
+- Reward playback uses **Tap to start video** on all devices.

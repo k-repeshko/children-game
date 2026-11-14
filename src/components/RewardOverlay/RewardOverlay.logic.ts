@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import type { RefObject } from 'react'
 
 const PRIMARY_REWARD_SOURCE = '/videos/reward.m4v'
@@ -13,13 +13,10 @@ export type RewardOverlayProps = UseRewardOverlayLogicInput
 type UseRewardOverlayLogicResult = {
   videoRef: RefObject<HTMLVideoElement | null>
   sourcePath: typeof PRIMARY_REWARD_SOURCE
-  requiresManualStart: boolean
   showManualPlayButton: boolean
   manualPlayButtonText: string
   onManualPlay: () => void
   onVideoLoaded: () => void
-  onVideoCanPlay: () => void
-  onVideoPlaying: () => void
 }
 
 type BuildRewardOverlayPropsInput = {
@@ -42,8 +39,6 @@ export function useRewardOverlayLogic({
   startSeconds,
 }: UseRewardOverlayLogicInput): UseRewardOverlayLogicResult {
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const requiresManualStart = window.matchMedia('(pointer: coarse)').matches
-  const [showManualPlayButton, setShowManualPlayButton] = useState(false)
 
   const startPlayback = useCallback(() => {
     const element = videoRef.current
@@ -51,19 +46,7 @@ export function useRewardOverlayLogic({
       return
     }
 
-    const playAttempt = element.play()
-    if (!playAttempt) {
-      setShowManualPlayButton(false)
-      return
-    }
-
-    void playAttempt
-      .then(() => {
-        setShowManualPlayButton(false)
-      })
-      .catch(() => {
-        setShowManualPlayButton(true)
-      })
+    void element.play().catch(() => undefined)
   }, [])
 
   useEffect(() => {
@@ -72,14 +55,9 @@ export function useRewardOverlayLogic({
       if (element) {
         element.pause()
       }
-      setShowManualPlayButton(false)
       return
     }
-
-    if (requiresManualStart) {
-      setShowManualPlayButton(true)
-    }
-  }, [visible, requiresManualStart])
+  }, [visible])
 
   const onVideoLoaded = useCallback(() => {
     if (!visible) {
@@ -95,39 +73,14 @@ export function useRewardOverlayLogic({
     const effectiveStart =
       Number.isFinite(duration) && duration > 0 ? startSeconds % duration : 0
     element.currentTime = effectiveStart
-
-    if (requiresManualStart) {
-      return
-    }
-
-    startPlayback()
-  }, [visible, requiresManualStart, startSeconds, startPlayback])
-
-  const onVideoCanPlay = useCallback(() => {
-    if (!visible) {
-      return
-    }
-
-    if (requiresManualStart) {
-      return
-    }
-
-    startPlayback()
-  }, [visible, requiresManualStart, startPlayback])
-
-  const onVideoPlaying = useCallback(() => {
-    setShowManualPlayButton(false)
-  }, [])
+  }, [visible, startSeconds])
 
   return {
     videoRef,
     sourcePath: PRIMARY_REWARD_SOURCE,
-    requiresManualStart,
-    showManualPlayButton,
+    showManualPlayButton: visible,
     manualPlayButtonText: 'Tap to start video',
     onManualPlay: startPlayback,
     onVideoLoaded,
-    onVideoCanPlay,
-    onVideoPlaying,
   }
 }
