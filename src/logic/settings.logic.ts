@@ -1,4 +1,4 @@
-import { REWARD_STEP_SECONDS, SHAPE_FORMS } from './game.constants'
+import { MATCH_MODES, REWARD_STEP_SECONDS, SHAPE_FORMS, type MatchMode } from './game.constants'
 
 const SETTINGS_STORAGE_KEY = 'game-settings'
 export const MAX_REWARD_SECONDS = 20
@@ -14,6 +14,7 @@ export type GameSettings = {
   shapes: number
   colors: number
   forms: number
+  match: MatchMode
 }
 
 function isValidRewardSeconds(value: number): boolean {
@@ -32,12 +33,27 @@ function isValidForms(value: number): boolean {
   return Number.isInteger(value) && value >= MIN_FORMS && value <= MAX_FORMS
 }
 
+function isValidMatch(value: unknown): value is MatchMode {
+  return MATCH_MODES.includes(value as MatchMode)
+}
+
+// Every target needs at least one shape, so the mode decides how many shapes are required.
+export function getRequiredShapes(match: MatchMode, colors: number, forms: number): number {
+  // Shape mode still needs the colors to fit, as in color mode.
+  return match === 'color' ? colors : Math.max(colors, forms)
+}
+
+export function isShapeCountEnough(settings: GameSettings): boolean {
+  return settings.shapes >= getRequiredShapes(settings.match, settings.colors, settings.forms)
+}
+
 export function getDefaultSettings(): GameSettings {
   return {
     rewardSeconds: REWARD_STEP_SECONDS,
     shapes: MIN_SHAPES,
     colors: MIN_COLORS,
     forms: MIN_FORMS,
+    match: 'color',
   }
 }
 
@@ -57,6 +73,8 @@ export function loadGameSettings(): GameSettings {
     const colors = parsed.colors ?? MIN_COLORS
     // Settings saved before forms existed have no value: treat as 1 form.
     const forms = parsed.forms ?? MIN_FORMS
+    // Settings saved before match existed have no value: treat as color.
+    const match = parsed.match ?? 'color'
     if (
       typeof rewardSeconds !== 'number' ||
       !isValidRewardSeconds(rewardSeconds) ||
@@ -65,7 +83,9 @@ export function loadGameSettings(): GameSettings {
       typeof colors !== 'number' ||
       !isValidColors(colors, shapes) ||
       typeof forms !== 'number' ||
-      !isValidForms(forms)
+      !isValidForms(forms) ||
+      !isValidMatch(match) ||
+      !isShapeCountEnough({ rewardSeconds, shapes, colors, forms, match })
     ) {
       console.warn('Invalid stored settings. Falling back to default settings.')
       return defaults
@@ -76,6 +96,7 @@ export function loadGameSettings(): GameSettings {
       shapes,
       colors,
       forms,
+      match,
     }
   } catch (error) {
     console.error('Failed to load game settings from local storage.', error)
@@ -99,6 +120,14 @@ export function saveGameSettings(settings: GameSettings): void {
 
   if (!isValidForms(settings.forms)) {
     throw new Error(`Forms must be an integer from ${MIN_FORMS} to ${MAX_FORMS}.`)
+  }
+
+  if (!isValidMatch(settings.match)) {
+    throw new Error('Match must be color, shape or both.')
+  }
+
+  if (!isShapeCountEnough(settings)) {
+    throw new Error('Shapes must be at least the number of targets.')
   }
 
   window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings))

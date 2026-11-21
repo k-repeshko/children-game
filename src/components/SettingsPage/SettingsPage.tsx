@@ -1,5 +1,12 @@
-import { Button, FieldError, NumberField, Page } from '../../ui'
+import type { MatchMode } from '../../logic/game.constants'
+import { Button, FieldError, NumberField, Page, SelectField } from '../../ui'
 import { type SettingsPageProps } from './SettingsPage.logic'
+
+const MATCH_LABELS: readonly { value: MatchMode; label: string }[] = [
+  { value: 'color', label: 'Color' },
+  { value: 'shape', label: 'Shape' },
+  { value: 'both', label: 'Color & Shape' },
+]
 
 export function SettingsPage({
   rewardSecondsInput,
@@ -13,11 +20,13 @@ export function SettingsPage({
   formsInput,
   minForms,
   maxForms,
+  matchInput,
   errorMessage,
   onRewardSecondsInputChange,
   onShapesInputChange,
   onColorsInputChange,
   onFormsInputChange,
+  onMatchInputChange,
   onSave,
 }: SettingsPageProps) {
   return (
@@ -49,6 +58,14 @@ export function SettingsPage({
         max={maxForms}
         value={formsInput}
         onChange={onFormsInputChange}
+      />
+      <SelectField
+        label="Match"
+        value={matchInput}
+        options={MATCH_LABELS}
+        onChange={(value) => {
+          onMatchInputChange(value as MatchMode)
+        }}
       />
       {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
     </Page>

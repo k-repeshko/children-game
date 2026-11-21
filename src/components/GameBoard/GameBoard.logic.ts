@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, PointerEvent as ReactPointerEvent, RefCallback } from 'react'
-import { DRAG_HIT_AREA_PADDING, SHAPE_SIZE, type ShapeForm } from '../../logic/game.constants'
-import type { Side } from '../../logic/round.logic'
+import {
+  DRAG_HIT_AREA_PADDING,
+  SHAPE_SIZE,
+  TARGET_SLOT_NEUTRAL_COLOR,
+  type MatchMode,
+  type ShapeForm,
+} from '../../logic/game.constants'
+import { targetAccepts, type Side, type Target } from '../../logic/round.logic'
 import { getShapeGridLayout, type Point } from '../../logic/shapeGrid.logic'
 import {
   findOverlappedTarget,
@@ -16,7 +22,8 @@ type ShapeState = {
 }
 
 export type UseGameBoardLogicInput = {
-  targetColors: string[]
+  targets: Target[]
+  match: MatchMode
   shapeColors: string[]
   shapeForms: ShapeForm[]
   shapeCount: number
@@ -38,7 +45,7 @@ export type GameBoardShapeProps = {
 
 export type GameBoardProps = {
   boardRef: RefCallback<HTMLElement>
-  targets: { key: number; style: CSSProperties }[]
+  targets: { key: number; form: ShapeForm | null; style: CSSProperties }[]
   shapes: GameBoardShapeProps[]
   hitAreaStyle: CSSProperties
   isDisabled: boolean
@@ -70,7 +77,8 @@ function getEventBoardCoordinates(
 }
 
 export function useGameBoardLogic({
-  targetColors,
+  targets: roundTargets,
+  match,
   shapeColors,
   shapeForms,
   shapeCount,
@@ -90,17 +98,18 @@ export function useGameBoardLogic({
   const [shapes, setShapes] = useState<ShapeState[]>([])
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
 
+  const targetCount = roundTargets.length
+  const targetRects = useMemo(
+    () => getTargetRects(targetCount, targetSide, boardSize, match !== 'color'),
+    [targetCount, targetSide, boardSize, match],
+  )
+  const targetWidth = targetRects[0]?.width ?? 0
+
   const layout = useMemo(
-    () => getShapeGridLayout(shapeCount, shapeSide, boardSize),
-    [shapeCount, shapeSide, boardSize],
+    () => getShapeGridLayout(shapeCount, shapeSide, boardSize, targetWidth),
+    [shapeCount, shapeSide, boardSize, targetWidth],
   )
   const shapeSize = layout.size
-
-  const targetCount = targetColors.length
-  const targetRects = useMemo(
-    () => getTargetRects(targetCount, targetSide, boardSize),
-    [targetCount, targetSide, boardSize],
-  )
 
   useEffect(() => {
     setShapes(layout.centers.map((center) => ({ center, delivered: false })))
@@ -191,10 +200,11 @@ export function useGameBoardLogic({
         ),
       }
 
-      // A shape is delivered only when its largest overlap is with its own-color target.
+      // A shape is delivered only when its largest overlap is with its own target.
       const overlapped = findOverlappedTarget(getShapeRect(nextCenter, shapeSize), targetRects)
       const reachedTarget =
-        overlapped !== null && targetColors[overlapped] === shapeColors[index]
+        overlapped !== null &&
+        targetAccepts(roundTargets[overlapped], shapeColors[index], shapeForms[index])
       setShapes((current) =>
         current.map((shape, shapeIndex) =>
           shapeIndex === index
@@ -217,7 +227,7 @@ export function useGameBoardLogic({
         }
       }
     },
-    [activeIndex, boardElement, boardSize, disabled, onSuccess, shapeColors, shapeSize, shapes, targetColors, targetRects],
+    [activeIndex, boardElement, boardSize, disabled, onSuccess, roundTargets, shapeColors, shapeForms, shapeSize, shapes, targetRects],
   )
 
   const onShapePointerUp = useCallback(
@@ -244,7 +254,7 @@ export function useGameBoardLogic({
                   height: shapeSize,
                   left: shape.center.x - shapeSize / 2,
                   top: shape.center.y - shapeSize / 2,
-                  color: shapeColors[index] ?? targetColors[0],
+                  color: shapeColors[index],
                 },
                 onPointerDown: (event) => onShapePointerDown(index, event),
                 onPointerMove: (event) => onShapePointerMove(index, event),
@@ -252,22 +262,26 @@ export function useGameBoardLogic({
               },
             ],
       ),
-    [shapes, shapeSize, shapeColors, shapeForms, targetColors, onShapePointerDown, onShapePointerMove, onShapePointerUp],
+    [shapes, shapeSize, shapeColors, shapeForms, onShapePointerDown, onShapePointerMove, onShapePointerUp],
   )
 
   const targets = useMemo(
     () =>
       targetRects.map((rect, index) => ({
         key: index,
+        form: roundTargets[index].form,
         style: {
           width: rect.width,
           height: rect.height,
           left: rect.left,
           top: rect.top,
-          backgroundColor: targetColors[index],
+          // Line targets are filled with their color; slots draw a dashed outline in it.
+          ...(roundTargets[index].form === null
+            ? { backgroundColor: roundTargets[index].color ?? undefined }
+            : { color: roundTargets[index].color ?? TARGET_SLOT_NEUTRAL_COLOR }),
         },
       })),
-    [targetRects, targetColors],
+    [targetRects, roundTargets],
   )
 
   const hitAreaStyle = useMemo<CSSProperties>(() => {

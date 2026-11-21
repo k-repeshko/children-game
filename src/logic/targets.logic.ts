@@ -4,6 +4,7 @@ import {
   TARGET_HEIGHT,
   TARGET_STACK_HEIGHT,
   TARGET_STACK_MARGIN,
+  TARGET_SLOT_MAX_WIDTH_RATIO,
   TARGET_WIDTH,
 } from './game.constants'
 import type { Side } from './round.logic'
@@ -20,9 +21,15 @@ export type Size = {
   height: number
 }
 
-// Targets are stacked evenly and centered; each target shrinks as the count grows.
-export function getTargetRects(count: number, targetSide: Side, size: Size): Rect[] {
-  const left = targetSide === 'left' ? BOARD_EDGE_GAP : size.width - BOARD_EDGE_GAP - TARGET_WIDTH
+// Targets are stacked evenly and centered; each target shrinks as the count grows. Line targets
+// have a fixed width; slot targets are squares whose side is the per-target stack height,
+// capped by the board width.
+export function getTargetRects(
+  count: number,
+  targetSide: Side,
+  size: Size,
+  slots: boolean,
+): Rect[] {
   const stackHeight =
     count <= 1
       ? TARGET_HEIGHT
@@ -30,11 +37,17 @@ export function getTargetRects(count: number, targetSide: Side, size: Size): Rec
   const height = Math.max(0, (stackHeight - (count - 1) * TARGET_GAP) / count)
   const top = (size.height - stackHeight) / 2
 
+  const width = slots
+    ? Math.min(height, size.width * TARGET_SLOT_MAX_WIDTH_RATIO)
+    : TARGET_WIDTH
+  const slotHeight = slots ? width : height
+  const left = targetSide === 'left' ? BOARD_EDGE_GAP : size.width - BOARD_EDGE_GAP - width
+
   return Array.from({ length: count }, (_, index) => ({
     left,
-    top: top + index * (height + TARGET_GAP),
-    width: TARGET_WIDTH,
-    height,
+    top: top + index * (height + TARGET_GAP) + (height - slotHeight) / 2,
+    width,
+    height: slotHeight,
   }))
 }
 

@@ -3,12 +3,15 @@
 ## Game concept
 
 - Full-screen white background.
-- Large game shapes (boxes) and a thick target line are shown in the play area.
-- Each round picks `Colors` distinct random rainbow colors. Every chosen color appears on at least one shape (the remaining shapes get random colors from the chosen set), and there is one target line per color.
-- Shapes come in several forms (square, circle, triangle, star). Each round picks `Forms` distinct random forms, and every shape gets one of them at random (independently, so a chosen form may not appear). Forms are purely visual: matching depends on color only, and all forms use the same square box for layout, hit area and target overlap.
-- The shapes start on either the left or right side at random, and the target lines appear on the opposite side, stacked evenly in a random color order. Target height shrinks as the number of targets grows (1 target keeps full size) so all targets fit with gaps between them.
+- Large game shapes (boxes) and thick target lines (or dashed slots) are shown in the play area.
+- Each round picks `Colors` distinct random rainbow colors and `Forms` distinct random forms (square, circle, triangle, star). The `Match` setting decides what a shape must match: **Color** (default), **Shape** or **Color & Shape**. Every chosen color is used by at least one shape, and every target receives at least one shape, so a round can always be finished.
+  - **Color:** one colored line target per color. Forms are decorative: each shape gets a random chosen form (a chosen form may go unused).
+  - **Shape:** one target per chosen form, a gray dashed outline (slot) of that form. Every chosen form appears on at least one shape; colors are decorative.
+  - **Color & Shape:** max(`Colors`, `Forms`) distinct (form, color) pairs that use every chosen color and form; each pair is a dashed outline of its form in its color and gets at least one shape. Every shape has exactly one matching target.
+- Slot targets are squares drawn in the same geometry as the shapes, with side = per-target stack height (capped at 25% of the board width), so they shrink as the number of targets grows. There are at most 4 targets in every mode.
+- The shapes start on either the left or right side at random, and the targets appear on the opposite side, stacked evenly in random order. Target height shrinks as the number of targets grows (1 target keeps full size) so all targets fit with gaps between them.
 - The number of shapes comes from the `Shapes` setting. They are laid out row by row in a grid of up to 3 columns (e.g. 3 shapes = 1 row, 4 = 2 rows, 8 = 3 rows) with gaps so they don't overlap. The grid is vertically centered, a partial last row is left-aligned, and the first column is always nearest the screen edge. Shape size and gaps shrink to fit small screens.
-- The child drags each shape with a finger to the target line; a shape disappears only when dropped on the target of its own color. If it overlaps several targets, the one with the largest overlap counts. A shape dropped on a wrong-color target (or anywhere else) just stays where it was dropped, with no feedback.
+- The child drags each shape with a finger to the target line; a shape disappears only when dropped on its own target (matching color, form, or both, per `Match`). If it overlaps several targets, the one with the largest bounding-box overlap counts. A shape dropped on a wrong target (or anywhere else) just stays where it was dropped, with no feedback.
 - When the last shape has been delivered, the game is completed.
 
 ## Reward behavior
@@ -19,7 +22,9 @@
 - `Reward Seconds` accepts values from 1 to 20.
 - `Shapes` accepts values from 1 to 9 (number of shapes shown per round).
 - `Colors` accepts values from 1 to 4 and must not exceed `Shapes` (default 1).
-- `Forms` accepts values from 1 to 4 (default 1) and is independent of `Shapes` and `Colors`.
+- `Forms` accepts values from 1 to 4 (default 1).
+- `Match` is Color, Shape or Color & Shape (default Color; old saved settings load as Color).
+- Saving requires `Shapes` ≥ number of targets: Color: `Colors`; Shape and Color & Shape: max(`Colors`, `Forms`). Stored settings that break this fall back to defaults.
 - The reward remains visible for the configured duration after video playback starts, then the game auto-restarts.
 - The game tracks completion count in memory and advances the reward playback by configured intervals between completions.
 

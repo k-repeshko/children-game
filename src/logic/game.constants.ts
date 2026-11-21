@@ -20,3 +20,11 @@ export const TARGET_STACK_MARGIN = 24
 // Decorative shape forms; all are drawn inside the same square box.
 export const SHAPE_FORMS = ['square', 'circle', 'triangle', 'star'] as const
 export type ShapeForm = (typeof SHAPE_FORMS)[number]
+
+// What a shape must match to be delivered: its color, its form, or both.
+export const MATCH_MODES = ['color', 'shape', 'both'] as const
+export type MatchMode = (typeof MATCH_MODES)[number]
+
+// Square slot targets (shape / both modes) are at most this share of the board width.
+export const TARGET_SLOT_MAX_WIDTH_RATIO = 0.25
+export const TARGET_SLOT_NEUTRAL_COLOR = '#9a9a9a'

@@ -4,7 +4,6 @@ import {
   SHAPE_GRID_GAP,
   SHAPE_GRID_TARGET_CLEARANCE,
   SHAPE_SIZE,
-  TARGET_WIDTH,
 } from './game.constants'
 import type { Side } from './round.logic'
 
@@ -32,6 +31,7 @@ export function getShapeGridLayout(
   count: number,
   shapeSide: Side,
   board: BoardSize,
+  targetWidth: number,
 ): ShapeGridLayout {
   const columns = Math.min(count, SHAPE_GRID_COLUMNS)
   const rows = Math.ceil(count / SHAPE_GRID_COLUMNS)
@@ -42,7 +42,7 @@ export function getShapeGridLayout(
   const unitsTall = rows + (rows - 1) * gapRatio
 
   const availableWidth =
-    board.width - 2 * BOARD_EDGE_GAP - TARGET_WIDTH - SHAPE_GRID_TARGET_CLEARANCE
+    board.width - 2 * BOARD_EDGE_GAP - targetWidth - SHAPE_GRID_TARGET_CLEARANCE
   const availableHeight = board.height - 2 * BOARD_EDGE_GAP
 
   const size = Math.max(

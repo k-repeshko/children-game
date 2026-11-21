@@ -49,3 +49,10 @@ Make forms matter: the child can sort shapes by form, by color, or by both, so t
 - Sounds or animations for wrong drops.
 - New forms beyond the four from task #3.
 - Matching by form with more than 4 targets.
+
+## Implementation notes
+- Targets are `{color, form}` with `null` meaning "any"; one `targetAccepts` check covers all three modes. Color mode keeps line targets (`form: null`); other modes render dashed slots.
+- Slot width cap: 25% of board width (`TARGET_SLOT_MAX_WIDTH_RATIO`); the shape grid reserves the actual target width instead of the fixed line width. Neutral slot color `#9a9a9a`.
+- Shape mode also requires `colors` ≤ `shapes` (colors are still spread over shapes), i.e. needs max(colors, forms) shapes.
+- Added a `SelectField` to the UI kit for the Match selector.
+- Round generation checked headlessly over all setting combinations (every shape has exactly one target, every target a shape). Not checked visually in a browser/on iPad.
