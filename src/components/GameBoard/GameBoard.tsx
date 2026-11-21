@@ -3,14 +3,16 @@ import type { GameBoardProps } from './GameBoard.logic'
 
 export function GameBoard({
   boardRef,
-  targetStyle,
+  targets,
   shapes,
   hitAreaStyle,
   isDisabled,
 }: GameBoardProps) {
   return (
     <section ref={boardRef} className="game-board" aria-label="Game board">
-      <div className="target-line" style={targetStyle} aria-hidden="true" />
+      {targets.map(({ key, style }) => (
+        <div key={key} className="target-line" style={style} aria-hidden="true" />
+      ))}
       {shapes.map(({ key, style, onPointerDown, onPointerMove, onPointerUp }) => (
         <button
           key={key}
