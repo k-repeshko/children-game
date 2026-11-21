@@ -33,7 +33,7 @@ Follow the same pattern for new components. Framework-free logic (pure functions
 
 **Round lifecycle.**
 1. `createGameRound()` (`logic/round.logic.ts`) picks a random rainbow color and random shape side; the target goes on the opposite side.
-2. `useGameBoardLogic` handles pointer-drag (with an enlarged invisible hit area), measures the board, and calls `onSuccess` when the shape rect intersects the target rect. A `resetToken` (round index) prop forces the board to reset its position.
+2. `useGameBoardLogic` lays out `shapeCount` shapes via `getShapeGridLayout` (`logic/shapeGrid.logic.ts`: 3-column grid, scaled to fit the board), handles pointer-drag per shape (with an enlarged invisible hit area), measures the board, hides each shape whose rect intersects the target rect, and calls `onSuccess` once all shapes are delivered. A `resetToken` (round index) prop forces the board to reset its position.
 3. `handleRoundComplete` locks completion (`completionLockedRef` guards double-fires), increments the count, and shows the reward overlay with `rewardStartSeconds = completionCount * rewardSeconds` so each reward continues further into the same video.
 4. The reward auto-close timer starts only when video playback actually begins (`onPlaybackStarted`), not when the overlay opens. Playback requires a user tap ("Tap to start video") because of mobile autoplay restrictions.
    The video is split into 10 s clips (`logic/rewardClips.logic.ts`, `planRewardClips`). `RewardOverlay` stays mounted while hidden: between rewards it prefetches the next reward's clips as blob URLs and preloads the first one; on `ended` it moves to the next clip on the same `<video>` element (which the first tap unlocked on iPad).
@@ -41,7 +41,7 @@ Follow the same pattern for new components. Framework-free logic (pure functions
 
 **Routing.** `HashRouter` (required for GitHub Pages) with `/` (game) and `/settings`. Navigating to `/settings` cancels any active reward; returning to `/` from settings starts a fresh round.
 
-**Settings.** `logic/settings.logic.ts` loads/validates/saves `{ rewardSeconds, shapes }` in `localStorage` under `game-settings`; invalid stored data falls back to defaults. Range constants (`MAX_REWARD_SECONDS`, `MIN_SHAPES`, `MAX_SHAPES`) are exported from there. `shapes` is stored but not yet used by gameplay.
+**Settings.** `logic/settings.logic.ts` loads/validates/saves `{ rewardSeconds, shapes }` in `localStorage` under `game-settings`; invalid stored data falls back to defaults. Range constants (`MAX_REWARD_SECONDS`, `MIN_SHAPES`, `MAX_SHAPES`) are exported from there. `shapes` sets how many shapes a round shows.
 
 ## Gotchas
 
