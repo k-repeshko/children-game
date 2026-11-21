@@ -5,10 +5,7 @@ import {
   useGameBoardLogic,
   type GameBoardProps,
 } from './components/GameBoard/GameBoard.logic'
-import {
-  type RewardOverlayProps,
-  buildRewardOverlayProps,
-} from './components/RewardOverlay/RewardOverlay.logic'
+import type { RewardOverlayProps } from './components/RewardOverlay/RewardOverlay.logic'
 import type { SettingsPageProps } from './components/SettingsPage/SettingsPage.logic'
 import { useSettingsButtonLogic } from './components/SettingsButton/SettingsButton.logic'
 import type { MatchMode } from './logic/game.constants'
@@ -58,9 +55,27 @@ export function useAppLogic(): UseAppLogicResult {
   const [isRewardVisible, setIsRewardVisible] = useState(false)
   const [round, setRound] = useState<GameRound>(() => createGameRound(settings.shapes, settings.colors, settings.forms, settings.match))
   const [roundIndex, setRoundIndex] = useState(0)
-  const previousPathnameRef = useRef(location.pathname)
+  const [previousPathname, setPreviousPathname] = useState(location.pathname)
   const completionLockedRef = useRef(false)
   const rewardCloseTimeoutRef = useRef<number | null>(null)
+
+  // Route changes are handled during render (not in an effect) so state updates don't cascade.
+  if (previousPathname !== location.pathname) {
+    setPreviousPathname(location.pathname)
+    if (location.pathname === '/settings') {
+      setIsRewardVisible(false)
+      setRewardSecondsInput(String(rewardSeconds))
+      setShapesInput(String(settings.shapes))
+      setColorsInput(String(settings.colors))
+      setFormsInput(String(settings.forms))
+      setMatchInput(settings.match)
+      setSettingsErrorMessage(null)
+    } else if (previousPathname === '/settings' && location.pathname === '/') {
+      setIsRewardVisible(false)
+      setRound(createGameRound(settings.shapes, settings.colors, settings.forms, settings.match))
+      setRoundIndex((current) => current + 1)
+    }
+  }
 
   const clearRewardCloseTimeout = useCallback(() => {
     if (rewardCloseTimeoutRef.current !== null) {
@@ -182,37 +197,6 @@ export function useAppLogic(): UseAppLogicResult {
   }, [colorsInput, formsInput, matchInput, navigate, rewardSecondsInput, shapesInput])
 
   useEffect(() => {
-    if (location.pathname !== '/settings') {
-      return
-    }
-
-    setRewardSecondsInput(String(rewardSeconds))
-    setShapesInput(String(settings.shapes))
-    setColorsInput(String(settings.colors))
-    setFormsInput(String(settings.forms))
-    setMatchInput(settings.match)
-    setSettingsErrorMessage(null)
-  }, [location.pathname, rewardSeconds, settings.shapes, settings.colors, settings.forms, settings.match])
-
-  useEffect(() => {
-    if (location.pathname === '/settings') {
-      setIsRewardVisible(false)
-      clearRewardCloseTimeout()
-      completionLockedRef.current = false
-    }
-
-    if (previousPathnameRef.current === '/settings' && location.pathname === '/') {
-      setIsRewardVisible(false)
-      clearRewardCloseTimeout()
-      completionLockedRef.current = false
-      setRound(createGameRound(settings.shapes, settings.colors, settings.forms, settings.match))
-      setRoundIndex((current) => current + 1)
-    }
-
-    previousPathnameRef.current = location.pathname
-  }, [clearRewardCloseTimeout, location.pathname, settings.shapes, settings.colors, settings.forms, settings.match])
-
-  useEffect(() => {
     if (!isRewardVisible) {
       completionLockedRef.current = false
       clearRewardCloseTimeout()
@@ -243,7 +227,7 @@ export function useAppLogic(): UseAppLogicResult {
     : progress.completionCount * rewardSeconds
   const rewardOverlayProps = useMemo(
     () =>
-      buildRewardOverlayProps({
+      ({
         visible: isRewardVisible,
         startSeconds: rewardStartSeconds,
         rewardSeconds,

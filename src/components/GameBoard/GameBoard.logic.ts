@@ -96,9 +96,6 @@ export function useGameBoardLogic({
     width: window.innerWidth,
     height: window.innerHeight,
   })
-  const [shapes, setShapes] = useState<ShapeState[]>([])
-  const [activeIndex, setActiveIndex] = useState<number | null>(null)
-
   const targetCount = roundTargets.length
   const targetRects = useMemo(
     () => getTargetRects(targetCount, targetSide, boardSize, match !== 'color'),
@@ -112,10 +109,17 @@ export function useGameBoardLogic({
   )
   const shapeSize = layout.size
 
-  useEffect(() => {
+  const [shapes, setShapes] = useState<ShapeState[]>(() =>
+    layout.centers.map((center) => ({ center, delivered: false })),
+  )
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  // Reset when the layout or round changes (during render, not in an effect).
+  const [resetKey, setResetKey] = useState({ layout, resetToken })
+  if (resetKey.layout !== layout || resetKey.resetToken !== resetToken) {
+    setResetKey({ layout, resetToken })
     setShapes(layout.centers.map((center) => ({ center, delivered: false })))
     setActiveIndex(null)
-  }, [layout, resetToken])
+  }
 
   useEffect(() => {
     if (!boardElement) {

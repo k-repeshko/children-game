@@ -35,10 +35,6 @@ type LoadedClip = {
   offset: number
 }
 
-export function buildRewardOverlayProps(input: UseRewardOverlayLogicInput): RewardOverlayProps {
-  return { ...input }
-}
-
 export function useRewardOverlayLogic({
   visible,
   startSeconds,
@@ -87,14 +83,15 @@ export function useRewardOverlayLogic({
   }, [onPlaybackStarted])
 
   // Pause when the overlay hides; show the play button when it opens.
+  const [previousVisible, setPreviousVisible] = useState(visible)
+  if (previousVisible !== visible) {
+    setPreviousVisible(visible)
+    setShowManualPlayButton(visible)
+  }
   useEffect(() => {
-    if (visible) {
-      setShowManualPlayButton(true)
-      return
+    if (!visible) {
+      videoRef.current?.pause()
     }
-
-    videoRef.current?.pause()
-    setShowManualPlayButton(false)
   }, [visible])
 
   // Between rewards, download the clips the next reward needs and load its first clip into the
