@@ -13,6 +13,7 @@ export function RewardOverlay({
   const {
     videoRef,
     sourcePath,
+    posterPath,
     showManualPlayButton,
     manualPlayButtonLabel,
     onManualPlay,
@@ -37,6 +38,7 @@ export function RewardOverlay({
             ref={videoRef}
             className="reward-video"
             src={sourcePath}
+            poster={posterPath}
             playsInline
             preload="auto"
             onLoadedMetadata={onVideoLoaded}

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
 const PRIMARY_REWARD_SOURCE = `${import.meta.env.BASE_URL}videos/reward.m4v`
+const REWARD_POSTER_SOURCE = `${import.meta.env.BASE_URL}videos/reward-poster.jpg`
 
 type UseRewardOverlayLogicInput = {
   visible: boolean
@@ -14,6 +15,7 @@ export type RewardOverlayProps = UseRewardOverlayLogicInput
 type UseRewardOverlayLogicResult = {
   videoRef: RefObject<HTMLVideoElement | null>
   sourcePath: typeof PRIMARY_REWARD_SOURCE
+  posterPath: string
   showManualPlayButton: boolean
   manualPlayButtonLabel: string
   onManualPlay: () => void
@@ -102,6 +104,7 @@ export function useRewardOverlayLogic({
   return {
     videoRef,
     sourcePath: PRIMARY_REWARD_SOURCE,
+    posterPath: REWARD_POSTER_SOURCE,
     showManualPlayButton,
     manualPlayButtonLabel: 'Play video',
     onManualPlay: startPlayback,
