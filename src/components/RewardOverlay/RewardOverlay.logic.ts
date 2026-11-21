@@ -54,13 +54,14 @@ export function useRewardOverlayLogic({
     }
 
     setShowManualPlayButton(false)
-    onPlaybackStarted()
     void element
       .play()
       .then(() => {
         onPlaybackStarted()
       })
-      .catch(() => undefined)
+      .catch(() => {
+        setShowManualPlayButton(true)
+      })
   }, [onPlaybackStarted])
 
   useEffect(() => {
