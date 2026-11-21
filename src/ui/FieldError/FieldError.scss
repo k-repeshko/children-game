@@ -1,0 +1,7 @@
+@use '../../styles/variables' as *;
+
+.ui-field-error {
+  margin: 0;
+  color: $color-error;
+  font-size: 14px;
+}

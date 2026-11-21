@@ -1,0 +1,11 @@
+@use '../../styles/variables' as *;
+
+// CSS triangle, nudged right so it looks optically centered in a circle.
+.ui-play-icon {
+  margin-left: 8px;
+  width: 0;
+  height: 0;
+  border-top: 24px solid transparent;
+  border-bottom: 24px solid transparent;
+  border-left: 38px solid $color-on-dark;
+}

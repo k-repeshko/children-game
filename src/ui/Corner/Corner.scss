@@ -1,0 +1,16 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.ui-corner {
+  z-index: $z-toolbar;
+  display: flex;
+  gap: $space-sm;
+
+  &--top-left {
+    @include safe-corner(top, left);
+  }
+
+  &--top-right {
+    @include safe-corner(top, right);
+  }
+}

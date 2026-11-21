@@ -1,6 +1,0 @@
-@use '../../styles/mixins' as *;
-
-.settings-button {
-  @include pill-button;
-  @include focus-ring;
-}

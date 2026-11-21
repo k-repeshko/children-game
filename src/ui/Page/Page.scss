@@ -1,0 +1,19 @@
+@use '../../styles/variables' as *;
+
+.ui-page {
+  width: min(92vw, 480px);
+  margin: 120px auto 0;
+  display: grid;
+  gap: $space-md;
+
+  &__title {
+    margin: 0;
+    font-size: 32px;
+    color: $color-text;
+  }
+
+  &__actions {
+    display: flex;
+    gap: $space-sm;
+  }
+}

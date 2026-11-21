@@ -1,4 +1,4 @@
-import './SettingsButton.scss'
+import { Button } from '../../ui'
 import type { SettingsButtonProps } from './SettingsButton.logic'
 
 export function SettingsButton({ isVisible, onOpenSettings, title }: SettingsButtonProps) {
@@ -6,9 +6,5 @@ export function SettingsButton({ isVisible, onOpenSettings, title }: SettingsBut
     return null
   }
 
-  return (
-    <button type="button" className="settings-button" onClick={onOpenSettings}>
-      {title}
-    </button>
-  )
+  return <Button onClick={onOpenSettings}>{title}</Button>
 }

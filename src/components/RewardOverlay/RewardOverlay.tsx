@@ -1,4 +1,5 @@
 import './RewardOverlay.scss'
+import { Button, Overlay, PlayIcon, Surface } from '../../ui'
 import {
   useRewardOverlayLogic,
   type RewardOverlayProps,
@@ -28,8 +29,8 @@ export function RewardOverlay({
   }
 
   return (
-    <section className="reward-overlay" aria-live="polite">
-      <div className="reward-content">
+    <Overlay aria-live="polite">
+      <Surface padding="md" className="reward-content">
         <div className="reward-video-wrap">
           <video
             ref={videoRef}
@@ -40,17 +41,18 @@ export function RewardOverlay({
             onPlaying={onVideoPlaying}
           />
           {showManualPlayButton ? (
-            <button
-              type="button"
+            <Button
+              shape="circle"
+              size="lg"
               className="reward-play-button"
               aria-label={manualPlayButtonLabel}
               onClick={onManualPlay}
             >
-              <span className="reward-play-icon" aria-hidden="true" />
-            </button>
+              <PlayIcon />
+            </Button>
           ) : null}
         </div>
-      </div>
-    </section>
+      </Surface>
+    </Overlay>
   )
 }

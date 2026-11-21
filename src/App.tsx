@@ -6,6 +6,7 @@ import { RewardOverlay } from './components/RewardOverlay/RewardOverlay'
 import { SettingsButton } from './components/SettingsButton/SettingsButton'
 import { SettingsPage } from './components/SettingsPage/SettingsPage'
 import { useAppLogic } from './App.logic'
+import { Badge, Corner } from './ui'
 
 function App() {
   const {
@@ -19,18 +20,18 @@ function App() {
 
   return (
     <main className="app">
-      <div className="top-actions">
+      <Corner position="top-right">
         <SettingsButton {...settingsButtonProps} />
         <FullscreenButton {...fullscreenButtonProps} />
-      </div>
+      </Corner>
       <Routes>
         <Route
           path="/"
           element={
             <>
-              <div className="status" aria-live="polite">
-                Completed: {completionCount}
-              </div>
+              <Corner position="top-left">
+                <Badge aria-live="polite">Completed: {completionCount}</Badge>
+              </Corner>
               <GameBoard {...gameBoardProps} />
               <RewardOverlay {...rewardOverlayProps} />
             </>

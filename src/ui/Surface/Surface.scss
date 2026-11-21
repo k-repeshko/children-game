@@ -1,0 +1,15 @@
+@use '../../styles/variables' as *;
+
+.ui-surface {
+  background: $color-bg;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-modal;
+
+  &--padding-md {
+    padding: $space-lg;
+  }
+
+  &--padding-lg {
+    padding: $space-xl;
+  }
+}

@@ -1,4 +1,4 @@
-import './FullscreenButton.scss'
+import { Button } from '../../ui'
 import type { FullscreenButtonProps } from './FullscreenButton.logic'
 
 export function FullscreenButton({
@@ -12,13 +12,8 @@ export function FullscreenButton({
   }
 
   return (
-    <button
-      type="button"
-      className="fullscreen-button"
-      onClick={onToggleFullscreen}
-      aria-pressed={isFullscreen}
-    >
+    <Button onClick={onToggleFullscreen} aria-pressed={isFullscreen}>
       {title}
-    </button>
+    </Button>
   )
 }
