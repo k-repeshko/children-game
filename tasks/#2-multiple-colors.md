@@ -30,3 +30,9 @@ Make rounds more varied and harder: shapes come in several colors, and the child
 ## Out of scope
 - Different shape forms (only colors vary).
 - Sounds or animations for wrong drops.
+
+## Implementation notes
+- Target stack: 1 target keeps the old 280px height; 2+ targets share a 420px stack (24px gaps), capped to board height minus 24px margins, so each target shrinks as the count grows (e.g. 198/124/87px on a tall board). Logic in `src/logic/targets.logic.ts`.
+- `GameRound` now holds `targetColors` (stack order, shuffled) and `shapeColors`; `createGameRound(shapes, colors)`.
+- Settings saved before `colors` existed are loaded as `colors = 1` instead of being reset to defaults. Saving with `colors > shapes` is rejected with an error message; lowering Shapes below Colors needs Colors lowered too.
+- Verified: build, lint, headless checks (color assignment over many random rounds, no target overlap/off-board at several heights, largest-overlap matching), and in the browser at 1024x600 with 4 colors / 6 shapes (targets visible, wrong-color drop stays, right-color drop hides). Not verified: real touch on iPad, full round → reward flow, 1-color visually (same code path).

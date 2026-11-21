@@ -7,9 +7,13 @@ export function SettingsPage({
   shapesInput,
   minShapes,
   maxShapes,
+  colorsInput,
+  minColors,
+  maxColors,
   errorMessage,
   onRewardSecondsInputChange,
   onShapesInputChange,
+  onColorsInputChange,
   onSave,
 }: SettingsPageProps) {
   return (
@@ -27,6 +31,13 @@ export function SettingsPage({
         max={maxShapes}
         value={shapesInput}
         onChange={onShapesInputChange}
+      />
+      <NumberField
+        label="Colors"
+        min={minColors}
+        max={maxColors}
+        value={colorsInput}
+        onChange={onColorsInputChange}
       />
       {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
     </Page>

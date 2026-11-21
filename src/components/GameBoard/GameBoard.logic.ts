@@ -1,34 +1,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, PointerEvent as ReactPointerEvent, RefCallback } from 'react'
-import {
-  BOARD_EDGE_GAP,
-  DRAG_HIT_AREA_PADDING,
-  SHAPE_SIZE,
-  TARGET_HEIGHT,
-  TARGET_WIDTH,
-} from '../../logic/game.constants'
+import { DRAG_HIT_AREA_PADDING, SHAPE_SIZE } from '../../logic/game.constants'
 import type { Side } from '../../logic/round.logic'
 import { getShapeGridLayout, type Point } from '../../logic/shapeGrid.logic'
+import {
+  findOverlappedTarget,
+  getTargetRects,
+  type Rect,
+  type Size,
+} from '../../logic/targets.logic'
 
 type ShapeState = {
   center: Point
   delivered: boolean
 }
 
-type Rect = {
-  left: number
-  top: number
-  width: number
-  height: number
-}
-
-type Size = {
-  width: number
-  height: number
-}
-
 export type UseGameBoardLogicInput = {
-  color: string
+  targetColors: string[]
+  shapeColors: string[]
   shapeCount: number
   shapeSide: Side
   targetSide: Side
@@ -47,7 +36,7 @@ export type GameBoardShapeProps = {
 
 export type GameBoardProps = {
   boardRef: RefCallback<HTMLElement>
-  targetStyle: CSSProperties
+  targets: { key: number; style: CSSProperties }[]
   shapes: GameBoardShapeProps[]
   hitAreaStyle: CSSProperties
   isDisabled: boolean
@@ -55,27 +44,6 @@ export type GameBoardProps = {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
-}
-
-function intersects(a: Rect, b: Rect): boolean {
-  return (
-    a.left < b.left + b.width &&
-    a.left + a.width > b.left &&
-    a.top < b.top + b.height &&
-    a.top + a.height > b.top
-  )
-}
-
-function getTargetRect(targetSide: Side, size: Size): Rect {
-  const horizontalPosition =
-    targetSide === 'left' ? BOARD_EDGE_GAP : size.width - BOARD_EDGE_GAP - TARGET_WIDTH
-
-  return {
-    left: horizontalPosition,
-    top: (size.height - TARGET_HEIGHT) / 2,
-    width: TARGET_WIDTH,
-    height: TARGET_HEIGHT,
-  }
 }
 
 function getShapeRect(center: Point, size: number): Rect {
@@ -100,7 +68,8 @@ function getEventBoardCoordinates(
 }
 
 export function useGameBoardLogic({
-  color,
+  targetColors,
+  shapeColors,
   shapeCount,
   shapeSide,
   targetSide,
@@ -124,9 +93,10 @@ export function useGameBoardLogic({
   )
   const shapeSize = layout.size
 
-  const targetRect = useMemo(
-    () => getTargetRect(targetSide, boardSize),
-    [targetSide, boardSize],
+  const targetCount = targetColors.length
+  const targetRects = useMemo(
+    () => getTargetRects(targetCount, targetSide, boardSize),
+    [targetCount, targetSide, boardSize],
   )
 
   useEffect(() => {
@@ -218,7 +188,10 @@ export function useGameBoardLogic({
         ),
       }
 
-      const reachedTarget = intersects(getShapeRect(nextCenter, shapeSize), targetRect)
+      // A shape is delivered only when its largest overlap is with its own-color target.
+      const overlapped = findOverlappedTarget(getShapeRect(nextCenter, shapeSize), targetRects)
+      const reachedTarget =
+        overlapped !== null && targetColors[overlapped] === shapeColors[index]
       setShapes((current) =>
         current.map((shape, shapeIndex) =>
           shapeIndex === index
@@ -241,7 +214,7 @@ export function useGameBoardLogic({
         }
       }
     },
-    [activeIndex, boardElement, boardSize, disabled, onSuccess, shapeSize, shapes, targetRect],
+    [activeIndex, boardElement, boardSize, disabled, onSuccess, shapeColors, shapeSize, shapes, targetColors, targetRects],
   )
 
   const onShapePointerUp = useCallback(
@@ -267,7 +240,7 @@ export function useGameBoardLogic({
                   height: shapeSize,
                   left: shape.center.x - shapeSize / 2,
                   top: shape.center.y - shapeSize / 2,
-                  backgroundColor: color,
+                  backgroundColor: shapeColors[index] ?? targetColors[0],
                 },
                 onPointerDown: (event) => onShapePointerDown(index, event),
                 onPointerMove: (event) => onShapePointerMove(index, event),
@@ -275,18 +248,22 @@ export function useGameBoardLogic({
               },
             ],
       ),
-    [shapes, shapeSize, color, onShapePointerDown, onShapePointerMove, onShapePointerUp],
+    [shapes, shapeSize, shapeColors, targetColors, onShapePointerDown, onShapePointerMove, onShapePointerUp],
   )
 
-  const targetStyle = useMemo<CSSProperties>(
-    () => ({
-      width: targetRect.width,
-      height: targetRect.height,
-      left: targetRect.left,
-      top: targetRect.top,
-      backgroundColor: color,
-    }),
-    [targetRect, color],
+  const targets = useMemo(
+    () =>
+      targetRects.map((rect, index) => ({
+        key: index,
+        style: {
+          width: rect.width,
+          height: rect.height,
+          left: rect.left,
+          top: rect.top,
+          backgroundColor: targetColors[index],
+        },
+      })),
+    [targetRects, targetColors],
   )
 
   const hitAreaStyle = useMemo<CSSProperties>(() => {
@@ -301,7 +278,7 @@ export function useGameBoardLogic({
 
   return {
     boardRef,
-    targetStyle,
+    targets,
     shapes: shapeProps,
     hitAreaStyle,
     isDisabled: disabled,
