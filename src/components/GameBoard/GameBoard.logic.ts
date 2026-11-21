@@ -3,6 +3,7 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent, RefCallback } fr
 import {
   DRAG_HIT_AREA_PADDING,
   SHAPE_SIZE,
+  TARGET_SLOT_MIN_COVERAGE,
   TARGET_SLOT_NEUTRAL_COLOR,
   type MatchMode,
   type ShapeForm,
@@ -201,7 +202,11 @@ export function useGameBoardLogic({
       }
 
       // A shape is delivered only when its largest overlap is with its own target.
-      const overlapped = findOverlappedTarget(getShapeRect(nextCenter, shapeSize), targetRects)
+      const overlapped = findOverlappedTarget(
+        getShapeRect(nextCenter, shapeSize),
+        targetRects,
+        match === 'color' ? 0 : TARGET_SLOT_MIN_COVERAGE,
+      )
       const reachedTarget =
         overlapped !== null &&
         targetAccepts(roundTargets[overlapped], shapeColors[index], shapeForms[index])
@@ -227,7 +232,7 @@ export function useGameBoardLogic({
         }
       }
     },
-    [activeIndex, boardElement, boardSize, disabled, onSuccess, roundTargets, shapeColors, shapeForms, shapeSize, shapes, targetRects],
+    [activeIndex, boardElement, boardSize, disabled, onSuccess, roundTargets, shapeColors, shapeForms, match, shapeSize, shapes, targetRects],
   )
 
   const onShapePointerUp = useCallback(

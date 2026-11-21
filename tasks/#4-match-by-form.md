@@ -56,3 +56,4 @@ Make forms matter: the child can sort shapes by form, by color, or by both, so t
 - Shape mode also requires `colors` ≤ `shapes` (colors are still spread over shapes), i.e. needs max(colors, forms) shapes.
 - Added a `SelectField` to the UI kit for the Match selector.
 - Round generation checked headlessly over all setting combinations (every shape has exactly one target, every target a shape). Not checked visually in a browser/on iPad.
+- Feedback: slot drops need 50% coverage of the smaller of shape/slot (Color mode unchanged); slots get a translucent fill (22%) of their color; circle/square shapes are drawn fill-only again (stroke had clipped the circle).

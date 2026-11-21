@@ -58,7 +58,13 @@ function overlapArea(a: Rect, b: Rect): number {
 }
 
 // Index of the target with the largest overlap with the shape, or null if none overlaps.
-export function findOverlappedTarget(shape: Rect, targets: readonly Rect[]): number | null {
+// With minCoverage > 0 the overlap must also cover that fraction of the smaller of the shape
+// and the target (so a large slot can still be matched by a smaller shape).
+export function findOverlappedTarget(
+  shape: Rect,
+  targets: readonly Rect[],
+  minCoverage = 0,
+): number | null {
   let best: number | null = null
   let bestArea = 0
   targets.forEach((target, index) => {
@@ -68,5 +74,9 @@ export function findOverlappedTarget(shape: Rect, targets: readonly Rect[]): num
       bestArea = area
     }
   })
-  return best
+  if (best === null) {
+    return null
+  }
+  const smaller = Math.min(shape.width * shape.height, targets[best].width * targets[best].height)
+  return bestArea >= minCoverage * smaller ? best : null
 }

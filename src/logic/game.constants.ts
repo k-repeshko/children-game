@@ -28,3 +28,5 @@ export type MatchMode = (typeof MATCH_MODES)[number]
 // Square slot targets (shape / both modes) are at most this share of the board width.
 export const TARGET_SLOT_MAX_WIDTH_RATIO = 0.25
 export const TARGET_SLOT_NEUTRAL_COLOR = '#9a9a9a'
+// Slot targets count a drop only when the shape covers this share of the smaller of the two.
+export const TARGET_SLOT_MIN_COVERAGE = 0.5

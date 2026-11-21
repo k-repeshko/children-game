@@ -19,7 +19,9 @@ function ShapeFormGraphic({
   // Dashed: an unfilled outline (target slot) in the same geometry as the filled shape.
   const outline = dashed
     ? {
-        fill: 'none',
+        // Translucent fill so the slot reads as a target, not just a dashed line.
+        fill: 'currentColor',
+        fillOpacity: 0.22,
         stroke: 'currentColor',
         strokeWidth: 4,
         strokeDasharray: '9 7',
@@ -34,8 +36,8 @@ function ShapeFormGraphic({
 
   return (
     <svg className={className} viewBox="0 0 100 100" aria-hidden="true">
-      {form === 'square' ? <rect width="100" height="100" rx="23" {...outline} /> : null}
-      {form === 'circle' ? <circle cx="50" cy="50" r="50" {...outline} /> : null}
+      {form === 'square' ? <rect width="100" height="100" rx="23" {...(dashed ? outline : { fill: 'currentColor' })} /> : null}
+      {form === 'circle' ? <circle cx="50" cy="50" r="50" {...(dashed ? outline : { fill: 'currentColor' })} /> : null}
       {form === 'triangle' ? <polygon points={TRIANGLE_POINTS} {...outline} /> : null}
       {form === 'star' ? <polygon points={STAR_POINTS} {...outline} /> : null}
     </svg>
