@@ -14,18 +14,24 @@
 .shape {
   position: absolute;
   border: none;
-  border-radius: 28px;
+  padding: 0;
+  background: none;
   cursor: grab;
   touch-action: none;
-  box-shadow:
-    0 14px 28px rgba(0, 0, 0, 0.18),
-    0 3px 10px rgba(0, 0, 0, 0.16);
+  filter: drop-shadow(0 14px 14px rgba(0, 0, 0, 0.18)) drop-shadow(0 3px 5px rgba(0, 0, 0, 0.16));
 
   &:active {
     cursor: grabbing;
   }
 
   &:disabled {
+    pointer-events: none;
+  }
+
+  &-graphic {
+    display: block;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
   }
 

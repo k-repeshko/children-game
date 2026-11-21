@@ -15,6 +15,9 @@ import { createGameRound, type GameRound } from './logic/round.logic'
 import {
   loadGameSettings,
   MAX_COLORS,
+  MAX_FORMS,
+  MIN_FORMS,
+  parseFormsInput,
   MAX_SHAPES,
   MIN_COLORS,
   MAX_REWARD_SECONDS,
@@ -42,13 +45,14 @@ export function useAppLogic(): UseAppLogicResult {
   const [rewardSecondsInput, setRewardSecondsInput] = useState(() => String(rewardSeconds))
   const [shapesInput, setShapesInput] = useState(() => String(settings.shapes))
   const [colorsInput, setColorsInput] = useState(() => String(settings.colors))
+  const [formsInput, setFormsInput] = useState(() => String(settings.forms))
   const [settingsErrorMessage, setSettingsErrorMessage] = useState<string | null>(null)
   const [progress, setProgress] = useState({
     completionCount: 0,
     rewardStartSeconds: 0,
   })
   const [isRewardVisible, setIsRewardVisible] = useState(false)
-  const [round, setRound] = useState<GameRound>(() => createGameRound(settings.shapes, settings.colors))
+  const [round, setRound] = useState<GameRound>(() => createGameRound(settings.shapes, settings.colors, settings.forms))
   const [roundIndex, setRoundIndex] = useState(0)
   const previousPathnameRef = useRef(location.pathname)
   const completionLockedRef = useRef(false)
@@ -64,10 +68,10 @@ export function useAppLogic(): UseAppLogicResult {
   const closeRewardRound = useCallback(() => {
     clearRewardCloseTimeout()
     setIsRewardVisible(false)
-    setRound(createGameRound(settings.shapes, settings.colors))
+    setRound(createGameRound(settings.shapes, settings.colors, settings.forms))
     setRoundIndex((current) => current + 1)
     completionLockedRef.current = false
-  }, [clearRewardCloseTimeout, settings.shapes, settings.colors])
+  }, [clearRewardCloseTimeout, settings.shapes, settings.colors, settings.forms])
 
   const handleRoundComplete = useCallback(() => {
     if (completionLockedRef.current || isRewardVisible) {
@@ -108,6 +112,11 @@ export function useAppLogic(): UseAppLogicResult {
     setSettingsErrorMessage(null)
   }, [])
 
+  const onFormsInputChange = useCallback((value: string) => {
+    setFormsInput(value)
+    setSettingsErrorMessage(null)
+  }, [])
+
   const onSaveSettings = useCallback(() => {
     const parsedRewardSeconds = parseRewardSecondsInput(rewardSecondsInput)
     if (parsedRewardSeconds === null) {
@@ -130,11 +139,18 @@ export function useAppLogic(): UseAppLogicResult {
       return
     }
 
+    const parsedForms = parseFormsInput(formsInput)
+    if (parsedForms === null) {
+      setSettingsErrorMessage(`Forms must be a whole number from ${MIN_FORMS} to ${MAX_FORMS}.`)
+      return
+    }
+
     try {
       saveGameSettings({
         rewardSeconds: parsedRewardSeconds,
         shapes: parsedShapes,
         colors: parsedColors,
+        forms: parsedForms,
       })
     } catch (error) {
       console.error('Failed to save game settings.', error)
@@ -146,10 +162,11 @@ export function useAppLogic(): UseAppLogicResult {
       rewardSeconds: parsedRewardSeconds,
       shapes: parsedShapes,
       colors: parsedColors,
+      forms: parsedForms,
     })
     setSettingsErrorMessage(null)
     navigate('/')
-  }, [colorsInput, navigate, rewardSecondsInput, shapesInput])
+  }, [colorsInput, formsInput, navigate, rewardSecondsInput, shapesInput])
 
   useEffect(() => {
     if (location.pathname !== '/settings') {
@@ -160,7 +177,7 @@ export function useAppLogic(): UseAppLogicResult {
     setShapesInput(String(settings.shapes))
     setColorsInput(String(settings.colors))
     setSettingsErrorMessage(null)
-  }, [location.pathname, rewardSeconds, settings.shapes, settings.colors])
+  }, [location.pathname, rewardSeconds, settings.shapes, settings.colors, settings.forms])
 
   useEffect(() => {
     if (location.pathname === '/settings') {
@@ -173,12 +190,12 @@ export function useAppLogic(): UseAppLogicResult {
       setIsRewardVisible(false)
       clearRewardCloseTimeout()
       completionLockedRef.current = false
-      setRound(createGameRound(settings.shapes, settings.colors))
+      setRound(createGameRound(settings.shapes, settings.colors, settings.forms))
       setRoundIndex((current) => current + 1)
     }
 
     previousPathnameRef.current = location.pathname
-  }, [clearRewardCloseTimeout, location.pathname, settings.shapes, settings.colors])
+  }, [clearRewardCloseTimeout, location.pathname, settings.shapes, settings.colors, settings.forms])
 
   useEffect(() => {
     if (!isRewardVisible) {
@@ -196,6 +213,7 @@ export function useAppLogic(): UseAppLogicResult {
   const gameBoardProps = useGameBoardLogic({
     targetColors: round.targetColors,
     shapeColors: round.shapeColors,
+    shapeForms: round.shapeForms,
     shapeCount: settings.shapes,
     shapeSide: round.shapeSide,
     targetSide: round.targetSide,
@@ -229,19 +247,25 @@ export function useAppLogic(): UseAppLogicResult {
       colorsInput,
       minColors: MIN_COLORS,
       maxColors: MAX_COLORS,
+      formsInput,
+      minForms: MIN_FORMS,
+      maxForms: MAX_FORMS,
       errorMessage: settingsErrorMessage,
       onRewardSecondsInputChange,
       onShapesInputChange,
       onColorsInputChange,
+      onFormsInputChange,
       onSave: onSaveSettings,
     }),
     [
       onRewardSecondsInputChange,
       onShapesInputChange,
       onColorsInputChange,
+      onFormsInputChange,
       onSaveSettings,
       rewardSecondsInput,
       colorsInput,
+      formsInput,
       shapesInput,
       settingsErrorMessage,
     ],

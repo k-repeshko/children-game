@@ -5,6 +5,7 @@
 - Full-screen white background.
 - Large game shapes (boxes) and a thick target line are shown in the play area.
 - Each round picks `Colors` distinct random rainbow colors. Every chosen color appears on at least one shape (the remaining shapes get random colors from the chosen set), and there is one target line per color.
+- Shapes come in several forms (square, circle, triangle, star). Each round picks `Forms` distinct random forms, and every shape gets one of them at random (independently, so a chosen form may not appear). Forms are purely visual: matching depends on color only, and all forms use the same square box for layout, hit area and target overlap.
 - The shapes start on either the left or right side at random, and the target lines appear on the opposite side, stacked evenly in a random color order. Target height shrinks as the number of targets grows (1 target keeps full size) so all targets fit with gaps between them.
 - The number of shapes comes from the `Shapes` setting. They are laid out row by row in a grid of up to 3 columns (e.g. 3 shapes = 1 row, 4 = 2 rows, 8 = 3 rows) with gaps so they don't overlap. The grid is vertically centered, a partial last row is left-aligned, and the first column is always nearest the screen edge. Shape size and gaps shrink to fit small screens.
 - The child drags each shape with a finger to the target line; a shape disappears only when dropped on the target of its own color. If it overlaps several targets, the one with the largest overlap counts. A shape dropped on a wrong-color target (or anywhere else) just stays where it was dropped, with no feedback.
@@ -18,6 +19,7 @@
 - `Reward Seconds` accepts values from 1 to 20.
 - `Shapes` accepts values from 1 to 9 (number of shapes shown per round).
 - `Colors` accepts values from 1 to 4 and must not exceed `Shapes` (default 1).
+- `Forms` accepts values from 1 to 4 (default 1) and is independent of `Shapes` and `Colors`.
 - The reward remains visible for the configured duration after video playback starts, then the game auto-restarts.
 - The game tracks completion count in memory and advances the reward playback by configured intervals between completions.
 

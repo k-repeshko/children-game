@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, PointerEvent as ReactPointerEvent, RefCallback } from 'react'
-import { DRAG_HIT_AREA_PADDING, SHAPE_SIZE } from '../../logic/game.constants'
+import { DRAG_HIT_AREA_PADDING, SHAPE_SIZE, type ShapeForm } from '../../logic/game.constants'
 import type { Side } from '../../logic/round.logic'
 import { getShapeGridLayout, type Point } from '../../logic/shapeGrid.logic'
 import {
@@ -18,6 +18,7 @@ type ShapeState = {
 export type UseGameBoardLogicInput = {
   targetColors: string[]
   shapeColors: string[]
+  shapeForms: ShapeForm[]
   shapeCount: number
   shapeSide: Side
   targetSide: Side
@@ -28,6 +29,7 @@ export type UseGameBoardLogicInput = {
 
 export type GameBoardShapeProps = {
   key: number
+  form: ShapeForm
   style: CSSProperties
   onPointerDown: (event: ReactPointerEvent<HTMLButtonElement>) => void
   onPointerMove: (event: ReactPointerEvent<HTMLButtonElement>) => void
@@ -70,6 +72,7 @@ function getEventBoardCoordinates(
 export function useGameBoardLogic({
   targetColors,
   shapeColors,
+  shapeForms,
   shapeCount,
   shapeSide,
   targetSide,
@@ -235,12 +238,13 @@ export function useGameBoardLogic({
           : [
               {
                 key: index,
+                form: shapeForms[index] ?? 'square',
                 style: {
                   width: shapeSize,
                   height: shapeSize,
                   left: shape.center.x - shapeSize / 2,
                   top: shape.center.y - shapeSize / 2,
-                  backgroundColor: shapeColors[index] ?? targetColors[0],
+                  color: shapeColors[index] ?? targetColors[0],
                 },
                 onPointerDown: (event) => onShapePointerDown(index, event),
                 onPointerMove: (event) => onShapePointerMove(index, event),
@@ -248,7 +252,7 @@ export function useGameBoardLogic({
               },
             ],
       ),
-    [shapes, shapeSize, shapeColors, targetColors, onShapePointerDown, onShapePointerMove, onShapePointerUp],
+    [shapes, shapeSize, shapeColors, shapeForms, targetColors, onShapePointerDown, onShapePointerMove, onShapePointerUp],
   )
 
   const targets = useMemo(

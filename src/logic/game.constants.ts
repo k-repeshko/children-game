@@ -16,3 +16,7 @@ export const TARGET_STACK_HEIGHT = 420
 export const TARGET_GAP = 24
 // Minimum free space above and below the target stack on short boards.
 export const TARGET_STACK_MARGIN = 24
+
+// Decorative shape forms; all are drawn inside the same square box.
+export const SHAPE_FORMS = ['square', 'circle', 'triangle', 'star'] as const
+export type ShapeForm = (typeof SHAPE_FORMS)[number]

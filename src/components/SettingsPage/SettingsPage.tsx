@@ -10,10 +10,14 @@ export function SettingsPage({
   colorsInput,
   minColors,
   maxColors,
+  formsInput,
+  minForms,
+  maxForms,
   errorMessage,
   onRewardSecondsInputChange,
   onShapesInputChange,
   onColorsInputChange,
+  onFormsInputChange,
   onSave,
 }: SettingsPageProps) {
   return (
@@ -38,6 +42,13 @@ export function SettingsPage({
         max={maxColors}
         value={colorsInput}
         onChange={onColorsInputChange}
+      />
+      <NumberField
+        label="Forms"
+        min={minForms}
+        max={maxForms}
+        value={formsInput}
+        onChange={onFormsInputChange}
       />
       {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
     </Page>

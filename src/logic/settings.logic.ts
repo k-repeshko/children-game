@@ -1,4 +1,4 @@
-import { REWARD_STEP_SECONDS } from './game.constants'
+import { REWARD_STEP_SECONDS, SHAPE_FORMS } from './game.constants'
 
 const SETTINGS_STORAGE_KEY = 'game-settings'
 export const MAX_REWARD_SECONDS = 20
@@ -6,11 +6,14 @@ export const MIN_SHAPES = 1
 export const MAX_SHAPES = 9
 export const MIN_COLORS = 1
 export const MAX_COLORS = 4
+export const MIN_FORMS = 1
+export const MAX_FORMS = SHAPE_FORMS.length
 
 export type GameSettings = {
   rewardSeconds: number
   shapes: number
   colors: number
+  forms: number
 }
 
 function isValidRewardSeconds(value: number): boolean {
@@ -25,11 +28,16 @@ function isValidColors(value: number, shapes: number): boolean {
   return Number.isInteger(value) && value >= MIN_COLORS && value <= MAX_COLORS && value <= shapes
 }
 
+function isValidForms(value: number): boolean {
+  return Number.isInteger(value) && value >= MIN_FORMS && value <= MAX_FORMS
+}
+
 export function getDefaultSettings(): GameSettings {
   return {
     rewardSeconds: REWARD_STEP_SECONDS,
     shapes: MIN_SHAPES,
     colors: MIN_COLORS,
+    forms: MIN_FORMS,
   }
 }
 
@@ -47,13 +55,17 @@ export function loadGameSettings(): GameSettings {
     const shapes = parsed.shapes
     // Settings saved before colors existed have no value: treat as 1 color.
     const colors = parsed.colors ?? MIN_COLORS
+    // Settings saved before forms existed have no value: treat as 1 form.
+    const forms = parsed.forms ?? MIN_FORMS
     if (
       typeof rewardSeconds !== 'number' ||
       !isValidRewardSeconds(rewardSeconds) ||
       typeof shapes !== 'number' ||
       !isValidShapes(shapes) ||
       typeof colors !== 'number' ||
-      !isValidColors(colors, shapes)
+      !isValidColors(colors, shapes) ||
+      typeof forms !== 'number' ||
+      !isValidForms(forms)
     ) {
       console.warn('Invalid stored settings. Falling back to default settings.')
       return defaults
@@ -63,6 +75,7 @@ export function loadGameSettings(): GameSettings {
       rewardSeconds,
       shapes,
       colors,
+      forms,
     }
   } catch (error) {
     console.error('Failed to load game settings from local storage.', error)
@@ -82,6 +95,10 @@ export function saveGameSettings(settings: GameSettings): void {
     throw new Error(
       `Colors must be an integer from ${MIN_COLORS} to ${MAX_COLORS} and not exceed shapes.`,
     )
+  }
+
+  if (!isValidForms(settings.forms)) {
+    throw new Error(`Forms must be an integer from ${MIN_FORMS} to ${MAX_FORMS}.`)
   }
 
   window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings))
@@ -123,6 +140,20 @@ export function parseColorsInput(input: string, shapes: number): number | null {
 
   const numeric = Number(normalized)
   if (!isValidColors(numeric, shapes)) {
+    return null
+  }
+
+  return numeric
+}
+
+export function parseFormsInput(input: string): number | null {
+  const normalized = input.trim()
+  if (!normalized) {
+    return null
+  }
+
+  const numeric = Number(normalized)
+  if (!isValidForms(numeric)) {
     return null
   }
 

@@ -30,3 +30,8 @@ Make rounds more varied: shapes come in several forms (square, circle, triangle,
 - Guaranteeing that every chosen form appears in a round.
 - Sounds or animations for forms.
 - Changes to target lines.
+
+## Implementation notes
+- Forms are drawn as inline SVG (100x100 viewBox, `currentColor` fill) inside the shape button; triangle and star use a rounded same-color stroke and are inset so the outline stays in the box. Geometry lives in `src/logic/shapeForms.logic.ts`. The button's box-shadow became a `drop-shadow` filter so it follows each outline.
+- `createGameRound(shapes, colors, forms)`; `GameRound.shapeForms` holds one form per shape.
+- Verified: build, lint (only pre-existing warnings), 9 shapes / 4 colors / 4 forms at 1024x600 (no overlap), wrong-target drop of a star stays, right-target drop hides it. Not verified: real touch on iPad, smallest phone-size screens, settings persistence across reload by hand.

@@ -7,9 +7,13 @@ export type SettingsPageProps = {
   colorsInput: string
   minColors: number
   maxColors: number
+  formsInput: string
+  minForms: number
+  maxForms: number
   errorMessage: string | null
   onRewardSecondsInputChange: (value: string) => void
   onShapesInputChange: (value: string) => void
   onColorsInputChange: (value: string) => void
+  onFormsInputChange: (value: string) => void
   onSave: () => void
 }
