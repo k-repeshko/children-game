@@ -1,0 +1,19 @@
+@use 'variables' as *;
+
+@mixin pill-button($padding-x: 18px) {
+  border: none;
+  border-radius: $radius-pill;
+  padding: 12px $padding-x;
+  background: $color-dark;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@mixin focus-ring {
+  &:focus-visible {
+    outline: 3px solid $color-focus;
+    outline-offset: 2px;
+  }
+}

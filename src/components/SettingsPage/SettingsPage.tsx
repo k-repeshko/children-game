@@ -1,4 +1,4 @@
-import './SettingsPage.css'
+import './SettingsPage.scss'
 import { type SettingsPageProps } from './SettingsPage.logic'
 
 export function SettingsPage({

@@ -21,9 +21,11 @@ There is no test framework set up. Verify changes with `npm run build` (type-che
 **View / logic split.** Every component lives in `src/components/<Name>/` as three files:
 - `<Name>.tsx` — presentational only; receives a fully-prepared props object and renders it.
 - `<Name>.logic.ts` — a `use<Name>Logic` hook (or `build<Name>Props` helper) that owns state, handlers, and computed styles, and exports the `<Name>Props` type.
-- `<Name>.css` — component styles.
+- `<Name>.scss` — component styles.
 
 Follow the same pattern for new components. Framework-free logic (pure functions, constants, browser API wrappers) goes in `src/logic/*.logic.ts` / `game.constants.ts`.
+
+**Styles** are SCSS (compiled by Vite via `sass-embedded`). Shared tokens live in `src/styles/_variables.scss` and shared mixins (`pill-button`, `focus-ring`) in `src/styles/_mixins.scss`; pull them in with `@use '../../styles/variables' as *;` (module system — don't use `@import`). Class names are plain global BEM-ish names (`.reward-overlay--hidden`), not CSS modules.
 
 **State lives in `App.logic.ts`.** `useAppLogic` is the single orchestrator: it holds settings, the current `GameRound`, completion count, reward visibility, and the reward auto-close timer, then calls each component's logic hook and hands `App.tsx` ready-made `*Props` objects. Components don't share state with each other directly.
 

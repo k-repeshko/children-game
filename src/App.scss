@@ -1,7 +1,9 @@
+@use './styles/variables' as *;
+
 .app {
   position: fixed;
   inset: 0;
-  background: #fff;
+  background: $color-bg;
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
@@ -10,8 +12,8 @@
 
 .top-actions {
   position: fixed;
-  top: max(16px, env(safe-area-inset-top));
-  right: max(16px, env(safe-area-inset-right));
+  top: max($safe-gap, env(safe-area-inset-top));
+  right: max($safe-gap, env(safe-area-inset-right));
   z-index: 20;
   display: flex;
   gap: 10px;
@@ -19,10 +21,10 @@
 
 .status {
   position: fixed;
-  top: max(16px, env(safe-area-inset-top));
-  left: max(16px, env(safe-area-inset-left));
+  top: max($safe-gap, env(safe-area-inset-top));
+  left: max($safe-gap, env(safe-area-inset-left));
   z-index: 15;
-  border-radius: 999px;
+  border-radius: $radius-pill;
   padding: 10px 16px;
   background: rgba(0, 0, 0, 0.74);
   color: #fff;

@@ -20,16 +20,16 @@
   box-shadow:
     0 14px 28px rgba(0, 0, 0, 0.18),
     0 3px 10px rgba(0, 0, 0, 0.16);
-}
 
-.shape:active {
-  cursor: grabbing;
-}
+  &:active {
+    cursor: grabbing;
+  }
 
-.shape:disabled {
-  pointer-events: none;
-}
+  &:disabled {
+    pointer-events: none;
+  }
 
-.shape-hit-area {
-  position: absolute;
+  &-hit-area {
+    position: absolute;
+  }
 }

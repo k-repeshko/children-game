@@ -1,4 +1,4 @@
-import './GameBoard.css'
+import './GameBoard.scss'
 import type { GameBoardProps } from './GameBoard.logic'
 
 export function GameBoard({

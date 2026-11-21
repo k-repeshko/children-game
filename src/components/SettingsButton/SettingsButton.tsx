@@ -1,4 +1,4 @@
-import './SettingsButton.css'
+import './SettingsButton.scss'
 import type { SettingsButtonProps } from './SettingsButton.logic'
 
 export function SettingsButton({ isVisible, onOpenSettings, title }: SettingsButtonProps) {

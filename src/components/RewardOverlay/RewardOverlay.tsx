@@ -1,4 +1,4 @@
-import './RewardOverlay.css'
+import './RewardOverlay.scss'
 import {
   useRewardOverlayLogic,
   type RewardOverlayProps,

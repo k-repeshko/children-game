@@ -1,4 +1,4 @@
-import './FullscreenButton.css'
+import './FullscreenButton.scss'
 import type { FullscreenButtonProps } from './FullscreenButton.logic'
 
 export function FullscreenButton({

@@ -1,4 +1,4 @@
-import './App.css'
+import './App.scss'
 import { Routes, Route } from 'react-router-dom'
 import { FullscreenButton } from './components/FullscreenButton/FullscreenButton'
 import { GameBoard } from './components/GameBoard/GameBoard'
