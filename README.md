@@ -46,3 +46,37 @@
 - In production builds a service worker (`public/sw.js`) keeps every clip it has fetched, plus the poster, on the device. Later rewards and repeat visits play them without the network. The cache is named after the clips' content hash (`REWARD_CLIPS_VERSION`), so regenerated clips replace the old cache.
 - Reward playback uses **Tap to start video** on all devices.
 - Settings are saved in local storage.
+
+## Ideas
+
+Ideas for future work. Kept toddler-friendly: no fail states, no text, big touch targets.
+
+### Gameplay variations (reuse the existing drag-and-drop)
+
+1. **Size matching.** Targets come in small, medium and large, and a shape fits only its own size. This is a new `Match` option alongside Color and Shape, so it should be cheap to add.
+2. **Count / "how many" targets.** A target shows 1, 2 or 3 dots, and the child drops that many shapes into it. This is a gentle step toward counting and has no text.
+3. **Sort by category.** Targets show pictures such as animals, fruits and vehicles. The shapes are emoji or simple illustrations, and the child sorts them into the right target.
+4. **Shadow matching.** The target is a gray silhouette of a picture, and the shape is the colored version.
+5. **Patterns.** Show a row like red, blue, red, ___ and let the child drag in the missing piece.
+6. **Simple jigsaw.** Split one picture into 2–4 pieces. The child drags them into slots, and the finished picture is the reward.
+
+### Feedback and polish
+
+7. **Sound effects.** A soft pop on pickup, a chime on a correct drop, and a spoken color or shape name on success. Wrong drops stay silent, which fits the no-fail rule.
+8. **Success animation.** The shape pops or sparkles into the target, and the target pulses. Right now the shape just disappears.
+9. **Gentle hint after idle.** If nothing happens for about 10 seconds, a shape wiggles or a faint arrow points to its target.
+10. **Snap-to-target.** The shape glides into the slot when it is dropped close enough, which is more forgiving than the 50% coverage rule.
+
+### Rewards and progression
+
+11. **Sticker collection.** Each completed round earns a sticker in a book, as an alternative to the video reward. Parents can pick video, stickers or both.
+12. **Multiple reward videos.** Let the parent choose from several videos, or rotate between them.
+13. **Auto-difficulty.** After a few quick rounds, the shape and target counts increase by one. They drop back if the child pauses for long stretches.
+
+### Parent features
+
+14. **Parent gate.** Protect Settings with a hold-for-3-seconds or simple-sum gate, so the child can't wander in. It's a small change with a real benefit.
+15. **Presets.** Save named profiles such as "Easy" or "Colors only" that can be switched quickly.
+16. **Play stats.** Rounds per day and average round time, shown in Settings.
+
+**Suggested order:** items 7, 8 and 14 are small and have the biggest effect. Item 1 (size matching) is the cheapest new mode.
