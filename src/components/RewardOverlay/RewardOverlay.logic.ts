@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
-const PRIMARY_REWARD_SOURCE = '/videos/reward.m4v'
+const PRIMARY_REWARD_SOURCE = `${import.meta.env.BASE_URL}videos/reward.m4v`
 
 type UseRewardOverlayLogicInput = {
   visible: boolean
