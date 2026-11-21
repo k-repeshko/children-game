@@ -24,12 +24,13 @@ export function RewardOverlay({
     onPlaybackStarted,
   })
 
-  if (!visible) {
-    return null
-  }
-
+  // Kept mounted while hidden so the video can buffer before the reward opens.
   return (
-    <Overlay aria-live="polite">
+    <Overlay
+      aria-live="polite"
+      aria-hidden={!visible}
+      className={visible ? undefined : 'reward-overlay--hidden'}
+    >
       <Surface padding="md" className="reward-content">
         <div className="reward-video-wrap">
           <video
@@ -37,6 +38,7 @@ export function RewardOverlay({
             className="reward-video"
             src={sourcePath}
             playsInline
+            preload="auto"
             onLoadedMetadata={onVideoLoaded}
             onPlaying={onVideoPlaying}
           />

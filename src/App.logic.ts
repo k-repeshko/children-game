@@ -181,14 +181,18 @@ export function useAppLogic(): UseAppLogicResult {
     disabled: isRewardVisible,
     onSuccess: handleRoundComplete,
   })
+  // While the overlay is hidden, point it at the next reward's start so it can buffer ahead.
+  const rewardStartSeconds = isRewardVisible
+    ? progress.rewardStartSeconds
+    : progress.completionCount * rewardSeconds
   const rewardOverlayProps = useMemo(
     () =>
       buildRewardOverlayProps({
         visible: isRewardVisible,
-        startSeconds: progress.rewardStartSeconds,
+        startSeconds: rewardStartSeconds,
         onPlaybackStarted: handleRewardPlaybackStarted,
       }),
-    [isRewardVisible, progress.rewardStartSeconds, handleRewardPlaybackStarted],
+    [isRewardVisible, rewardStartSeconds, handleRewardPlaybackStarted],
   )
   const fullscreenButtonProps = useFullscreenButtonLogic()
   const settingsButtonProps = useSettingsButtonLogic()

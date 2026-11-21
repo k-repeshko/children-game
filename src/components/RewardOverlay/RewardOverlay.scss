@@ -1,5 +1,12 @@
 @use '../../styles/variables' as *;
 
+.reward-overlay--hidden {
+  visibility: hidden;
+  pointer-events: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 .reward-content {
   width: min(92vw, 900px);
 }

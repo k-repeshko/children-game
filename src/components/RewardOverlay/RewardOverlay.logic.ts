@@ -64,34 +64,36 @@ export function useRewardOverlayLogic({
       })
   }, [onPlaybackStarted])
 
-  useEffect(() => {
-    if (!visible) {
-      const element = videoRef.current
-      if (element) {
-        element.pause()
-      }
-      setShowManualPlayButton(false)
-      return
-    }
-
-    setShowManualPlayButton(true)
-  }, [visible])
-
-  const onVideoLoaded = useCallback(() => {
-    if (!visible) {
-      return
-    }
-
+  const seekToStart = useCallback(() => {
     const element = videoRef.current
-    if (!element) {
+    if (!element || element.readyState < HTMLMediaElement.HAVE_METADATA) {
       return
     }
 
     const duration = element.duration
     const effectiveStart =
       Number.isFinite(duration) && duration > 0 ? startSeconds % duration : 0
-    element.currentTime = effectiveStart
-  }, [visible, startSeconds])
+    if (Math.abs(element.currentTime - effectiveStart) > 0.25) {
+      element.currentTime = effectiveStart
+    }
+  }, [startSeconds])
+
+  // The <video> stays mounted between rewards, so while the overlay is hidden
+  // we park it at the upcoming start position and let it buffer from there.
+  useEffect(() => {
+    if (visible) {
+      setShowManualPlayButton(true)
+      return
+    }
+
+    videoRef.current?.pause()
+    setShowManualPlayButton(false)
+    seekToStart()
+  }, [visible, seekToStart])
+
+  const onVideoLoaded = useCallback(() => {
+    seekToStart()
+  }, [seekToStart])
 
   const onVideoPlaying = useCallback(() => {
     onPlaybackStarted()
