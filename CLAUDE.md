@@ -54,6 +54,7 @@ Follow the same pattern for new components. Framework-free logic (pure functions
 ## Workflow
 
 - Tasks live in `tasks/#N <name>.md` in the main checkout (not in worktrees). If a task file isn't found in the worktree, look in the main repo's `tasks/`.
+- `tasks/#0-task-template.md` is the template for defining a new task (Goal, Behavior, Open questions, Acceptance criteria, Out of scope). When the user asks to define or write up a task, create the new `tasks/#N <name>.md` from it, keeping its section structure, and drop the optional sections that don't apply.
 - Ask before assuming gameplay behavior; the audience is a toddler: big touch targets, no fail states, no text-dependent UI.
 - There are no tests. For pure logic, check it headlessly: bundle with `npx esbuild file.ts --bundle --platform=node` and run it with node.
 - The dev server may move off 5173 if the port is busy. Use the URL that `preview_start` reports.
