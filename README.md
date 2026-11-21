@@ -29,7 +29,8 @@
 
 ## Local reward videos
 
-- Reward video path: `public/videos/reward.m4v`
+- Reward video path: `public/videos/reward.mp4` (H.264 720×400, ~0.47 Mbps, keyframe every 2 s).
+- Re-encode a new source with `scripts/encode-reward-video.sh <source> [output]` (requires ffmpeg).
 - Video is played locally by the browser from `/videos/*`.
 - Reward playback uses **Tap to start video** on all devices.
 - Settings are saved in local storage.

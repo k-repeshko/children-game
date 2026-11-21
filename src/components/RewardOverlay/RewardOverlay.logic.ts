@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
-const PRIMARY_REWARD_SOURCE = `${import.meta.env.BASE_URL}videos/reward.m4v`
+const PRIMARY_REWARD_SOURCE = `${import.meta.env.BASE_URL}videos/reward.mp4`
 const REWARD_POSTER_SOURCE = `${import.meta.env.BASE_URL}videos/reward-poster.jpg`
 
 type UseRewardOverlayLogicInput = {
