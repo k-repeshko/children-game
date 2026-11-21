@@ -26,7 +26,7 @@ Make rounds more varied: shapes come in several forms (square, circle, triangle,
 - `npm run build` and `npm run lint` pass; README is updated for the new setting and forms.
 
 ## Out of scope
-- Matching by form (targets keyed to forms) or any form-based rules; forms stay decorative.
+- [x] Matching by form (targets keyed to forms) or any form-based rules; forms stay decorative. → moved to task #4.
 - Guaranteeing that every chosen form appears in a round.
 - Sounds or animations for forms.
 - Changes to target lines.
