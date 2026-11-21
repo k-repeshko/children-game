@@ -29,8 +29,10 @@
 
 ## Local reward videos
 
-- Reward video path: `public/videos/reward.mp4` (H.264 720×400, ~0.47 Mbps, keyframe every 2 s).
-- Re-encode a new source with `scripts/encode-reward-video.sh <source> [output]` (requires ffmpeg).
-- Video is played locally by the browser from `/videos/*`.
+- The reward video is stored as 10-second clips in `public/videos/clips/reward-NNN.mp4` (H.264 720×400, ~0.47 Mbps, mono 64 kbps AAC, ~0.5–1.4 MB each), listed in the generated `src/logic/rewardClips.manifest.ts`.
+- Regenerate the clips and the manifest from a source video with `scripts/encode-reward-video.sh <source>` (requires ffmpeg and ffprobe).
+- Each reward plays the window `[completionCount × Reward Seconds, + Reward Seconds)` of the full video (wrapping at the end), whatever the setting is: it starts in the matching clip at the right offset and moves on to the next clip seamlessly.
+- While the child plays a round, the clips the next reward needs are downloaded into memory, and the first one is loaded into the hidden video player, so the reward starts instantly. If they aren't ready in time, the clip streams from the network instead.
+- A poster frame (`public/videos/reward-poster.jpg`) shows until playback starts.
 - Reward playback uses **Tap to start video** on all devices.
 - Settings are saved in local storage.

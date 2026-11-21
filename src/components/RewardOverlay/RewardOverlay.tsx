@@ -8,20 +8,22 @@ import {
 export function RewardOverlay({
   visible,
   startSeconds,
+  rewardSeconds,
   onPlaybackStarted,
 }: RewardOverlayProps) {
   const {
     videoRef,
-    sourcePath,
     posterPath,
     showManualPlayButton,
     manualPlayButtonLabel,
     onManualPlay,
     onVideoLoaded,
     onVideoPlaying,
+    onVideoEnded,
   } = useRewardOverlayLogic({
     visible,
     startSeconds,
+    rewardSeconds,
     onPlaybackStarted,
   })
 
@@ -37,12 +39,12 @@ export function RewardOverlay({
           <video
             ref={videoRef}
             className="reward-video"
-            src={sourcePath}
             poster={posterPath}
             playsInline
             preload="auto"
             onLoadedMetadata={onVideoLoaded}
             onPlaying={onVideoPlaying}
+            onEnded={onVideoEnded}
           />
           {showManualPlayButton ? (
             <Button

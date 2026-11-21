@@ -190,9 +190,10 @@ export function useAppLogic(): UseAppLogicResult {
       buildRewardOverlayProps({
         visible: isRewardVisible,
         startSeconds: rewardStartSeconds,
+        rewardSeconds,
         onPlaybackStarted: handleRewardPlaybackStarted,
       }),
-    [isRewardVisible, rewardStartSeconds, handleRewardPlaybackStarted],
+    [isRewardVisible, rewardStartSeconds, rewardSeconds, handleRewardPlaybackStarted],
   )
   const fullscreenButtonProps = useFullscreenButtonLogic()
   const settingsButtonProps = useSettingsButtonLogic()
