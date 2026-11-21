@@ -175,6 +175,7 @@ export function useAppLogic(): UseAppLogicResult {
 
   const gameBoardProps = useGameBoardLogic({
     color: round.color,
+    shapeCount: settings.shapes,
     shapeSide: round.shapeSide,
     targetSide: round.targetSide,
     resetToken: roundIndex,

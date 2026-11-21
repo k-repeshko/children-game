@@ -8,10 +8,11 @@ import {
   TARGET_WIDTH,
 } from '../../logic/game.constants'
 import type { Side } from '../../logic/round.logic'
+import { getShapeGridLayout, type Point } from '../../logic/shapeGrid.logic'
 
-type Point = {
-  x: number
-  y: number
+type ShapeState = {
+  center: Point
+  delivered: boolean
 }
 
 type Rect = {
@@ -28,6 +29,7 @@ type Size = {
 
 export type UseGameBoardLogicInput = {
   color: string
+  shapeCount: number
   shapeSide: Side
   targetSide: Side
   resetToken: number
@@ -35,15 +37,20 @@ export type UseGameBoardLogicInput = {
   onSuccess: () => void
 }
 
+export type GameBoardShapeProps = {
+  key: number
+  style: CSSProperties
+  onPointerDown: (event: ReactPointerEvent<HTMLButtonElement>) => void
+  onPointerMove: (event: ReactPointerEvent<HTMLButtonElement>) => void
+  onPointerUp: (event: ReactPointerEvent<HTMLButtonElement>) => void
+}
+
 export type GameBoardProps = {
   boardRef: RefCallback<HTMLElement>
   targetStyle: CSSProperties
-  shapeStyle: CSSProperties
+  shapes: GameBoardShapeProps[]
   hitAreaStyle: CSSProperties
   isDisabled: boolean
-  onShapePointerDown: (event: ReactPointerEvent<HTMLButtonElement>) => void
-  onShapePointerMove: (event: ReactPointerEvent<HTMLButtonElement>) => void
-  onShapePointerUp: (event: ReactPointerEvent<HTMLButtonElement>) => void
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -59,18 +66,6 @@ function intersects(a: Rect, b: Rect): boolean {
   )
 }
 
-function getInitialPosition(shapeSide: Side, size: Size): Point {
-  const x =
-    shapeSide === 'left'
-      ? BOARD_EDGE_GAP + SHAPE_SIZE / 2
-      : size.width - BOARD_EDGE_GAP - SHAPE_SIZE / 2
-
-  return {
-    x,
-    y: size.height / 2,
-  }
-}
-
 function getTargetRect(targetSide: Side, size: Size): Rect {
   const horizontalPosition =
     targetSide === 'left' ? BOARD_EDGE_GAP : size.width - BOARD_EDGE_GAP - TARGET_WIDTH
@@ -83,12 +78,12 @@ function getTargetRect(targetSide: Side, size: Size): Rect {
   }
 }
 
-function getShapeRect(center: Point): Rect {
+function getShapeRect(center: Point, size: number): Rect {
   return {
-    left: center.x - SHAPE_SIZE / 2,
-    top: center.y - SHAPE_SIZE / 2,
-    width: SHAPE_SIZE,
-    height: SHAPE_SIZE,
+    left: center.x - size / 2,
+    top: center.y - size / 2,
+    width: size,
+    height: size,
   }
 }
 
@@ -106,6 +101,7 @@ function getEventBoardCoordinates(
 
 export function useGameBoardLogic({
   color,
+  shapeCount,
   shapeSide,
   targetSide,
   resetToken,
@@ -119,31 +115,24 @@ export function useGameBoardLogic({
     width: window.innerWidth,
     height: window.innerHeight,
   })
-  const [shapeCenter, setShapeCenter] = useState<Point>(() => ({
-    x: 0,
-    y: 0,
-  }))
-  const [isDragging, setIsDragging] = useState(false)
+  const [shapes, setShapes] = useState<ShapeState[]>([])
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
+
+  const layout = useMemo(
+    () => getShapeGridLayout(shapeCount, shapeSide, boardSize),
+    [shapeCount, shapeSide, boardSize],
+  )
+  const shapeSize = layout.size
 
   const targetRect = useMemo(
     () => getTargetRect(targetSide, boardSize),
     [targetSide, boardSize],
   )
 
-  const verifySuccess = useCallback(
-    (nextCenter: Point) => {
-      if (!disabled && intersects(getShapeRect(nextCenter), targetRect)) {
-        onSuccess()
-      }
-    },
-    [disabled, onSuccess, targetRect],
-  )
-
   useEffect(() => {
-    const nextPosition = getInitialPosition(shapeSide, boardSize)
-    setShapeCenter(nextPosition)
-    setIsDragging(false)
-  }, [shapeSide, boardSize, resetToken])
+    setShapes(layout.centers.map((center) => ({ center, delivered: false })))
+    setActiveIndex(null)
+  }, [layout, resetToken])
 
   useEffect(() => {
     if (!boardElement) {
@@ -191,27 +180,27 @@ export function useGameBoardLogic({
   }, [])
 
   const onShapePointerDown = useCallback(
-    (event: ReactPointerEvent<HTMLButtonElement>) => {
-      if (disabled || !boardElement) {
+    (index: number, event: ReactPointerEvent<HTMLButtonElement>) => {
+      const shape = shapes[index]
+      if (disabled || !boardElement || !shape || shape.delivered || activeIndex !== null) {
         return
       }
 
-      const targetElement = event.currentTarget
-      targetElement.setPointerCapture(event.pointerId)
+      event.currentTarget.setPointerCapture(event.pointerId)
 
       const pointer = getEventBoardCoordinates(event, boardElement)
       dragOffsetRef.current = {
-        x: pointer.x - shapeCenter.x,
-        y: pointer.y - shapeCenter.y,
+        x: pointer.x - shape.center.x,
+        y: pointer.y - shape.center.y,
       }
-      setIsDragging(true)
+      setActiveIndex(index)
     },
-    [boardElement, disabled, shapeCenter],
+    [activeIndex, boardElement, disabled, shapes],
   )
 
   const onShapePointerMove = useCallback(
-    (event: ReactPointerEvent<HTMLButtonElement>) => {
-      if (disabled || !isDragging || !boardElement) {
+    (index: number, event: ReactPointerEvent<HTMLButtonElement>) => {
+      if (disabled || activeIndex !== index || !boardElement) {
         return
       }
 
@@ -219,20 +208,40 @@ export function useGameBoardLogic({
       const nextCenter: Point = {
         x: clamp(
           pointer.x - dragOffsetRef.current.x,
-          SHAPE_SIZE / 2,
-          boardSize.width - SHAPE_SIZE / 2,
+          shapeSize / 2,
+          boardSize.width - shapeSize / 2,
         ),
         y: clamp(
           pointer.y - dragOffsetRef.current.y,
-          SHAPE_SIZE / 2,
-          boardSize.height - SHAPE_SIZE / 2,
+          shapeSize / 2,
+          boardSize.height - shapeSize / 2,
         ),
       }
 
-      setShapeCenter(nextCenter)
-      verifySuccess(nextCenter)
+      const reachedTarget = intersects(getShapeRect(nextCenter, shapeSize), targetRect)
+      setShapes((current) =>
+        current.map((shape, shapeIndex) =>
+          shapeIndex === index
+            ? { center: nextCenter, delivered: reachedTarget }
+            : shape,
+        ),
+      )
+
+      if (reachedTarget) {
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId)
+        }
+        setActiveIndex(null)
+
+        const allDelivered = shapes.every(
+          (shape, shapeIndex) => shapeIndex === index || shape.delivered,
+        )
+        if (allDelivered) {
+          onSuccess()
+        }
+      }
     },
-    [boardElement, disabled, isDragging, boardSize, verifySuccess],
+    [activeIndex, boardElement, boardSize, disabled, onSuccess, shapeSize, shapes, targetRect],
   )
 
   const onShapePointerUp = useCallback(
@@ -240,20 +249,33 @@ export function useGameBoardLogic({
       if (event.currentTarget.hasPointerCapture(event.pointerId)) {
         event.currentTarget.releasePointerCapture(event.pointerId)
       }
-      setIsDragging(false)
+      setActiveIndex(null)
     },
     [],
   )
 
-  const shapeStyle = useMemo<CSSProperties>(
-    () => ({
-      width: SHAPE_SIZE,
-      height: SHAPE_SIZE,
-      left: shapeCenter.x - SHAPE_SIZE / 2,
-      top: shapeCenter.y - SHAPE_SIZE / 2,
-      backgroundColor: color,
-    }),
-    [shapeCenter, color],
+  const shapeProps = useMemo<GameBoardShapeProps[]>(
+    () =>
+      shapes.flatMap((shape, index) =>
+        shape.delivered
+          ? []
+          : [
+              {
+                key: index,
+                style: {
+                  width: shapeSize,
+                  height: shapeSize,
+                  left: shape.center.x - shapeSize / 2,
+                  top: shape.center.y - shapeSize / 2,
+                  backgroundColor: color,
+                },
+                onPointerDown: (event) => onShapePointerDown(index, event),
+                onPointerMove: (event) => onShapePointerMove(index, event),
+                onPointerUp: onShapePointerUp,
+              },
+            ],
+      ),
+    [shapes, shapeSize, color, onShapePointerDown, onShapePointerMove, onShapePointerUp],
   )
 
   const targetStyle = useMemo<CSSProperties>(
@@ -267,24 +289,21 @@ export function useGameBoardLogic({
     [targetRect, color],
   )
 
-  const hitAreaStyle = useMemo<CSSProperties>(
-    () => ({
-      top: -DRAG_HIT_AREA_PADDING,
-      right: -DRAG_HIT_AREA_PADDING,
-      bottom: -DRAG_HIT_AREA_PADDING,
-      left: -DRAG_HIT_AREA_PADDING,
-    }),
-    [],
-  )
+  const hitAreaStyle = useMemo<CSSProperties>(() => {
+    const padding = DRAG_HIT_AREA_PADDING * (shapeSize / SHAPE_SIZE)
+    return {
+      top: -padding,
+      right: -padding,
+      bottom: -padding,
+      left: -padding,
+    }
+  }, [shapeSize])
 
   return {
     boardRef,
     targetStyle,
-    shapeStyle,
+    shapes: shapeProps,
     hitAreaStyle,
     isDisabled: disabled,
-    onShapePointerDown,
-    onShapePointerMove,
-    onShapePointerUp,
   }
 }
