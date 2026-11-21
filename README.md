@@ -34,5 +34,6 @@
 - Each reward plays the window `[completionCount × Reward Seconds, + Reward Seconds)` of the full video (wrapping at the end), whatever the setting is: it starts in the matching clip at the right offset and moves on to the next clip seamlessly.
 - While the child plays a round, the clips the next reward needs are downloaded into memory, and the first one is loaded into the hidden video player, so the reward starts instantly. If they aren't ready in time, the clip streams from the network instead.
 - A poster frame (`public/videos/reward-poster.jpg`) shows until playback starts.
+- In production builds a service worker (`public/sw.js`) keeps every clip it has fetched, plus the poster, on the device. Later rewards and repeat visits play them without the network. The cache is named after the clips' content hash (`REWARD_CLIPS_VERSION`), so regenerated clips replace the old cache.
 - Reward playback uses **Tap to start video** on all devices.
 - Settings are saved in local storage.
