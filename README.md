@@ -30,7 +30,7 @@
 ## Local reward videos
 
 - The reward video is stored as 10-second clips in `public/videos/clips/reward-NNN.mp4` (H.264 720×400, ~0.47 Mbps, mono 64 kbps AAC, ~0.5–1.4 MB each), listed in the generated `src/logic/rewardClips.manifest.ts`.
-- Regenerate the clips and the manifest from a source video with `scripts/encode-reward-video.sh <source>` (requires ffmpeg and ffprobe).
+- Regenerate the clips and the manifest from a source video with `scripts/encode-reward-video.sh <source> [start-seconds] [end-seconds]` (requires ffmpeg and ffprobe). The optional start/end points trim the source; the current clips use 29.27–382.35 s, which skips the studio logo, the theme song and the end credits.
 - Each reward plays the window `[completionCount × Reward Seconds, + Reward Seconds)` of the full video (wrapping at the end), whatever the setting is: it starts in the matching clip at the right offset and moves on to the next clip seamlessly.
 - While the child plays a round, the clips the next reward needs are downloaded into memory, and the first one is loaded into the hidden video player, so the reward starts instantly. If they aren't ready in time, the clip streams from the network instead.
 - A poster frame (`public/videos/reward-poster.jpg`) shows until playback starts.

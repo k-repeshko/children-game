@@ -3,33 +3,46 @@
 #   public/videos/clips/reward-NNN.mp4   self-contained 10 s clips (timestamps start at 0)
 #   src/logic/rewardClips.manifest.ts    clip list + durations, bundled into the app
 #
-# Usage: scripts/encode-reward-video.sh <source-video>   (needs ffmpeg/ffprobe on PATH, or $FFMPEG/$FFPROBE)
+# Usage: scripts/encode-reward-video.sh <source-video> [start-seconds] [end-seconds]
+#   start-seconds  where in the source the clips begin (skip a logo/theme song); default 0
+#   end-seconds    where in the source the clips end (drop end credits); default: end of source
+#   Needs ffmpeg/ffprobe on PATH, or $FFMPEG/$FFPROBE.
+#   The current clips were made with:
+#     scripts/encode-reward-video.sh reward-source.m4v 29.27 382.35
+#   (skips the studio logo + theme song, and the closing scene with end credits)
 set -euo pipefail
 
 FFMPEG="${FFMPEG:-ffmpeg}"
 FFPROBE="${FFPROBE:-ffprobe}"
-SRC="${1:?usage: $0 <source-video>}"
+SRC="${1:?usage: $0 <source-video> [start-seconds] [end-seconds]}"
+START_SECONDS="${2:-0}"
 CLIP_SECONDS=10
 CLIPS_DIR="public/videos/clips"
 MANIFEST="src/logic/rewardClips.manifest.ts"
 
-TOTAL_SECONDS="$("$FFPROBE" -v error -show_entries format=duration -of csv=p=0 "$SRC")"
-CLIP_COUNT="$(awk -v t="$TOTAL_SECONDS" -v c="$CLIP_SECONDS" 'BEGIN { n = int(t / c); if (t - n * c > 0.5) n++; print n }')"
+END_SECONDS="${3:-$("$FFPROBE" -v error -show_entries format=duration -of csv=p=0 "$SRC")}"
+CLIP_COUNT="$(awk -v e="$END_SECONDS" -v s="$START_SECONDS" -v c="$CLIP_SECONDS" 'BEGIN { t = e - s; n = int(t / c); if (t - n * c > 0.5) n++; print n }')"
 
 rm -rf "$CLIPS_DIR"
 mkdir -p "$CLIPS_DIR"
 
 # Each clip is encoded straight from the source with an accurate seek, so clip N covers exactly
-# [N*10, N*10+10) seconds and starts at timestamp 0.
+# [start + N*10, start + N*10 + 10) seconds of the source and starts at timestamp 0.
 # H.264 plays everywhere (iPad Safari and desktop browsers); -tune animation suits flat-color
 # cartoons. Keyframes every 2 s keep in-clip seeks cheap. Mono 64 kbps AAC is plenty for a
 # tablet speaker. faststart puts the index first so a clip can start before it fully downloads.
 for ((i = 0; i < CLIP_COUNT; i++)); do
-  start=$((i * CLIP_SECONDS))
+  start="$(awk -v s="$START_SECONDS" -v i="$i" -v c="$CLIP_SECONDS" 'BEGIN { OFMT = "%.6f"; print s + i * c }')"
   length="$CLIP_SECONDS"
-  # The last clip takes whatever is left (absorbs a short tail under 0.5 s).
-  if ((i == CLIP_COUNT - 1)); then length=3600; fi
-  "$FFMPEG" -hide_banner -loglevel error -y -ss "$start" -i "$SRC" -t "$length" \
+  # The last clip runs to the end point (absorbs a short tail under 0.5 s).
+  if ((i == CLIP_COUNT - 1)); then
+    length="$(awk -v e="$END_SECONDS" -v s="$start" 'BEGIN { OFMT = "%.6f"; print e - s }')"
+  fi
+  # No seek from 0: some sources don't start on a keyframe, and `-ss 0` would jump to the first
+  # keyframe (skipping and freezing everything before it).
+  seek=()
+  if [[ "$start" != 0 ]]; then seek=(-ss "$start"); fi
+  "$FFMPEG" -hide_banner -loglevel error -y ${seek[@]+"${seek[@]}"} -i "$SRC" -t "$length" \
     -c:v libx264 -preset veryslow -tune animation -crf 28 -profile:v high -pix_fmt yuv420p \
     -force_key_frames 'expr:gte(t,n_forced*2)' \
     -c:a aac -b:a 64k -ac 1 \
